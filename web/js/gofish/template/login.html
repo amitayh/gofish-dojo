@@ -1,0 +1,21 @@
+<div class="modal">
+    <div class="modal-header">
+        <h3>Login</h3>
+    </div>
+    <div class="modal-body">
+        <div data-dojo-attach-point="alert"></div>
+        <div class="input-append" data-dojo-attach-point="form">
+            <input type="text" placeholder="Please enter your name"
+                data-dojo-attach-point="nameInput">
+            
+            <button class="btn" type="button" disabled
+                data-dojo-attach-point="joinButton"
+                data-dojo-attach-event="click: joinGame">
+                Join game
+            </button>
+        </div>
+
+        <h4>Players in game</h4>
+        <ol data-dojo-attach-point="playersList"></ol>
+    </div>
+</div>
