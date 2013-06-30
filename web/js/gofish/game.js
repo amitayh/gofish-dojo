@@ -5,8 +5,10 @@ define([
     'gofish/data-service',
     'gofish/page/config',
     'gofish/page/login',
-    'gofish/page/table'
-], function(declare, lang, domConstruct, dataService, ConfigPage, LoginPage, TablePage) {
+    'gofish/page/table',
+    'gofish/page/error'
+], function(declare, lang, domConstruct, dataService,
+            ConfigPage, LoginPage, TablePage, ErrorPage) {
 
     return declare(null, {
         
@@ -17,87 +19,66 @@ define([
             this.pages = {
                 config: new ConfigPage(),
                 login: new LoginPage(),
-                table: new TablePage()
+                table: new TablePage(),
+                error: new ErrorPage()
             };
             this.init();
         },
         
         init: function() {
-            this.pages.config.on('start', lang.hitch(this, 'startGame'));
+            // Attach event listeners
+            this.pages.config.on('startGame', lang.hitch(this, 'startGame'));
             this.pages.login.on('joinGame', lang.hitch(this, 'joinGame'));
         },
         
         run: function() {
             var self = this;
             dataService.checkStatus().then(function(response) {
-                if (response.status === 'IDLE') {
-                    // Configure a new game
-                    self.loadPage('config');
-                } else if (response.status === 'CONFIGURED') {
-                    // Game is configured, waiting for human players
-                    var loginPage = self.pages.login;
-                    if (response.playerId) {
-                        // Already logged in
-                        loginPage.setAlert('Successfully joined game! Waiting for other players...', 'success');
-                        loginPage.clearForm();
-                    } else {
-                        // Join a game that was configured by another player
-                        loginPage.setAlert('Game already created by another player, please enter your name to join');
-                    }
-                    self.loadPage('login');
+                var loggedIn = !!response.playerId;
+                switch (response.status) {
+                    case 'IDLE':
+                        // Configure a new game
+                        self.loadPage('config');
+                        break;
+
+                    case 'CONFIGURED':
+                        // Game is configured, waiting for human players
+                        self[loggedIn ? 'joinGameSuccess' : 'gameAlreadyConfigured']();
+                        self.loadPage('login');
+                        break;
+
+                    case 'STARTED':
+                        // Game started
+                        self[loggedIn ? 'loadTablePage' : 'gameFullError']();
+                        break;
                 }
             });
-        },
-        
-        loadPage: function(page) {
-            var newPage = this.pages[page];
-            if (this.currentPage) {
-                this.currentPage.emit('deactivate', {});
-                domConstruct.place(newPage.domNode, this.currentPage.domNode, 'replace');
-            } else {
-                domConstruct.place(newPage.domNode, this.container);
-            }
-            this.currentPage = newPage;
-            this.currentPage.emit('activate', {});
         },
         
         startGame: function() {
             var self = this, configData = this.pages.config.getData();
             dataService.configure(configData).then(function(response) {
-                if (response.status === 'CONFIGURED') {
-                    if (response.success) {
-                        var loginPage = self.pages.login,
-                            message = 'Game was successfully created, please enter your name to join',
-                            type = 'success';
+                switch (response.status) {
+                    case 'CONFIGURED':
+                        var success = response.success;
+                        self[success ? 'startGameSuccess' : 'gameAlreadyConfigured']();
+                        self.loadPage('login');
+                        break;
 
-                        loginPage.setAlert(message, type);
-                    }
-                    self.loadPage('login');
+                    case 'STARTED':
+                        self.gameFullError();
+                        break;
                 }
             });
         },
         
-        joinGame: function(event) {
-            var options = {
-                data: {name: event.name},
-                method: 'post',
-                handleAs: 'json'
-            };
-            
-            var loginPage = this.pages.login;
-            request('login', options).then(function(response) {
+        joinGame: function(event) {            
+            var self = this;
+            dataService.login(event.name).then(function(response) {
+                var loginPage = self.pages.login;
                 if (response.success) {
-                    var message = 'Successfully joined game!',
-                        players = response.players;
-                    
-                    if (players.numPlayers < players.totalNumPlayers) {
-                        message += ' Waiting for other players...';
-                    }
-                    
-                    loginPage.updatePlayersList(players);
-                    loginPage.setAlert(message, 'success');
-                    loginPage.clearForm();
-                    
+                    loginPage.updatePlayersList(response.players, response.totalPlayers);
+                    self.joinGameSuccess();
                 } else {
                     loginPage.setAlert(response.message, 'error');
                 }
@@ -106,6 +87,41 @@ define([
                 // 2) name taken
                 // 3) game is full
             });
+        },
+
+        loadPage: function(page) {
+            var newPage = this.pages[page];
+            if (this.currentPage) {
+                this.currentPage.emit('Unload', {});
+                domConstruct.place(newPage.domNode, this.currentPage.domNode, 'replace');
+            } else {
+                domConstruct.place(newPage.domNode, this.container);
+            }
+            this.currentPage = newPage;
+            this.currentPage.emit('Load', {});
+        },
+
+        loadTablePage: function() {
+            this.loadPage('table');
+        },
+
+        gameFullError: function() {
+            this.pages.error.setError('Game already started');
+            this.loadPage('error');
+        },
+
+        startGameSuccess: function() {
+            this.pages.login.setAlert('Game was successfully created, please enter your name to join', 'success');
+        },
+
+        joinGameSuccess: function() {
+            var loginPage = this.pages.login;
+            loginPage.setAlert('Successfully joined game! Waiting for other players...', 'success');
+            loginPage.clearForm();
+        },
+
+        gameAlreadyConfigured: function() {
+            this.pages.login.setAlert('Game already created by another player, please enter your name to join');
         }
 
     });

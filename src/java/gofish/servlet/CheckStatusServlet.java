@@ -23,7 +23,7 @@ public class CheckStatusServlet extends AjaxServlet {
         
         public PlayersList players;
         
-        public Integer totalPlayers;
+        public int totalPlayers;
         
         public CheckStatusResult(Engine engine, HttpSession session) {
             status = engine.getStatus();

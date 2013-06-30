@@ -12,6 +12,14 @@ define(['dojo/request'], function(request) {
                 method: 'post',
                 handleAs: 'json'
             });
+        },
+        
+        login: function(name) {
+            return request('login', {
+                data: {name: name},
+                method: 'post',
+                handleAs: 'json'
+            });
         }
         
     };

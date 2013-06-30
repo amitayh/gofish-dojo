@@ -1,14 +1,14 @@
 define([
     'dojo/_base/declare',
     'dojo/_base/lang',
-    'dojo/on',
-    'dojo/request',
     'dojo/dom-construct',
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
     'dojox/html/entities',
+    'gofish/data-service',
     'dojo/text!gofish/template/login.html'
-], function(declare, lang, on, request, domConstruct, _WidgetBase, _TemplatedMixin, entities, template) {
+], function(declare, lang, domConstruct, _WidgetBase, _TemplatedMixin,
+            entities, dataService, template) {
     
     var UpdateInterval = 2500;
 
@@ -42,11 +42,11 @@ define([
             this.joinButton.disabled = true;
         },
         
-        onactivate: function() {
+        onLoad: function() {
             this.getPlayersList();
         },
         
-        ondeactivate: function() {
+        onUnload: function() {
             clearTimeout(this.updateTimer);
         },
         
@@ -61,23 +61,31 @@ define([
         
         getPlayersList: function() {
             var self = this, callback = lang.hitch(this, 'getPlayersList');
-            request('checkStatus', {handleAs: 'json'}).then(function(response) {
-                // Update list
-                self.updatePlayersList(response.players);
-                
-                // Set update timer
-                self.updateTimer = setTimeout(callback, UpdateInterval);
+            dataService.checkStatus().then(function(response) {
+                switch (response.status) {
+                    case 'CONFIGURED':
+                        // Update list
+                        self.updatePlayersList(response.players, response.totalPlayers);
+
+                        // Set update timer
+                        self.updateTimer = setTimeout(callback, UpdateInterval);
+
+                        break;
+
+                    case 'STARTED':
+                        break;
+                }
             });
         },
         
-        updatePlayersList: function(players) {
+        updatePlayersList: function(players, totalPlayers) {
             domConstruct.empty(this.playersList);
-            for (var i = 0; i < players.totalNumPlayers; i++) {
+            for (var i = 0; i < totalPlayers; i++) {
                 var li = domConstruct.create('li', null, this.playersList),
-                    name = players.playerNames[i];
+                    player = players[i];
                 
-                if (i < players.numPlayers) {
-                    li.innerHTML = entities.encode(name);
+                if (player !== undefined) {
+                    li.innerHTML = entities.encode(player.name);
                 }
             }
         }

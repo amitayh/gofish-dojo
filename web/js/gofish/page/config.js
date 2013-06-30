@@ -98,7 +98,7 @@ define([
             return this.model;
         },
         
-        onStart: function() {
+        onStartGame: function() {
             // Fires when the "start game" button is clicked
         }
         
