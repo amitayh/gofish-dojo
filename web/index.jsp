@@ -15,7 +15,9 @@
         <script>
             require(['dojo/dom', 'gofish/game', 'dojo/domReady!'], function(dom, Game) {
                 // DOM is ready, create main view and run game
-                var game = new Game(dom.byId('container'));
+                var container = dom.byId('container'),
+                    game = new Game(container);
+
                 game.run();
             });
         </script>

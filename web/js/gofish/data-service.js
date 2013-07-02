@@ -2,8 +2,12 @@ define(['dojo/request'], function(request) {
     
     return {
         
-        checkStatus: function() {
-            return request('checkStatus', {handleAs: 'json'});
+        checkStatus: function(lastEventId) {
+            var options = {handleAs: 'json'};
+            if (lastEventId !== undefined) {
+                options.data = {lastEventId: lastEventId};
+            }
+            return request('checkStatus', options);
         },
         
         configure: function(configData) {

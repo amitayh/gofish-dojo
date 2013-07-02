@@ -26,11 +26,15 @@ define([
         },
         
         init: function() {
+            var configPage = this.pages.config,
+                loginPage = this.pages.login;
+
             // Attach event listeners
-            this.pages.config.on('startGame', lang.hitch(this, 'startGame'));
-            this.pages.login.on('joinGame', lang.hitch(this, 'joinGame'));
+            configPage.on('startGame', lang.hitch(this, 'startGame'));
+            loginPage.on('joinGame', lang.hitch(this, 'joinGame'));
+            loginPage.on('gameStarted', lang.hitch(this, 'gameStarted'));
         },
-        
+
         run: function() {
             var self = this;
             dataService.checkStatus().then(function(response) {
@@ -49,7 +53,7 @@ define([
 
                     case 'STARTED':
                         // Game started
-                        self[loggedIn ? 'loadTablePage' : 'gameFullError']();
+                        self.gameStarted({loggedIn: loggedIn});
                         break;
                 }
             });
@@ -77,32 +81,36 @@ define([
             dataService.login(event.name).then(function(response) {
                 var loginPage = self.pages.login;
                 if (response.success) {
-                    loginPage.updatePlayersList(response.players, response.totalPlayers);
+                    loginPage.addPlayerFromForm();
                     self.joinGameSuccess();
                 } else {
                     loginPage.setAlert(response.message, 'error');
                 }
-                // Alreay logged in
-                // 1) login OK
-                // 2) name taken
-                // 3) game is full
             });
+        },
+
+        gameStarted: function(event) {
+            if (event.loggedIn) {
+                // Player is logged in - show game table
+                this.loadPage('table');
+            } else {
+                // Game is full - show error page
+                this.gameFullError();
+            }
         },
 
         loadPage: function(page) {
             var newPage = this.pages[page];
             if (this.currentPage) {
+                // Unload previous page
                 this.currentPage.emit('Unload', {});
                 domConstruct.place(newPage.domNode, this.currentPage.domNode, 'replace');
             } else {
                 domConstruct.place(newPage.domNode, this.container);
             }
+            // Load new page
+            newPage.emit('Load', {});
             this.currentPage = newPage;
-            this.currentPage.emit('Load', {});
-        },
-
-        loadTablePage: function() {
-            this.loadPage('table');
         },
 
         gameFullError: function() {

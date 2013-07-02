@@ -2,9 +2,7 @@ package gofish.servlet;
 
 import gofish.game.Engine;
 import gofish.game.config.Config;
-import gofish.game.exception.DuplicateNameException;
-import gofish.game.exception.EmptyNameException;
-import gofish.game.exception.TooManyPlayersException;
+import gofish.game.engine.AddPlayerException;
 import gofish.game.player.Computer;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -53,7 +51,7 @@ public class ConfigureServlet extends AjaxServlet {
                 String name = botNames[i];
                 engine.addPlayer(new Computer(name));
             }
-        } catch (EmptyNameException | DuplicateNameException | TooManyPlayersException e) {
+        } catch (AddPlayerException e) {
             throw new ServletException(e);
         }
     }

@@ -2,12 +2,10 @@ package gofish.game;
 
 import gofish.game.config.Config;
 import gofish.game.config.ValidationException;
+import gofish.game.engine.AddPlayerException;
 import gofish.game.event.Event;
 import gofish.game.event.PlayerJoinEvent;
 import gofish.game.event.StartGameEvent;
-import gofish.game.exception.EmptyNameException;
-import gofish.game.exception.DuplicateNameException;
-import gofish.game.exception.TooManyPlayersException;
 import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
 import java.util.ArrayList;
@@ -68,19 +66,19 @@ public class Engine {
         return eventQueue.subList(startIndex, eventQueue.size());
     }
     
-    public void addPlayer(Player player) throws EmptyNameException, DuplicateNameException, TooManyPlayersException {
+    public void addPlayer(Player player) throws AddPlayerException {
         String name = player.getName();
         if (name.isEmpty()) {
-            throw new EmptyNameException();
+            throw new AddPlayerException("Empty player name");
         }
         if (players.containsName(name)) {
-            throw new DuplicateNameException(name);
+            throw new AddPlayerException("Duplicate player name '" + name + "'");
         }
         if (
             (player.isHuman() && players.getNumHumanPlayers() == config.getNumHumanPlayers()) ||
             (player.isComputer() && players.getNumComputerPlayers() == config.getNumComputerPlayers())
         ) {
-            throw new TooManyPlayersException(config.getTotalNumPlayers());
+            throw new AddPlayerException("Game is full");
         }
         players.add(player);
         eventQueue.add(new PlayerJoinEvent(player));
@@ -98,7 +96,7 @@ public class Engine {
     }
 
     private void dealCards() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
 }
