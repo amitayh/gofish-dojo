@@ -3,7 +3,7 @@ define([
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
     'dojox/html/entities',
-    'dojo/text!gofish/template/error.html'
+    'dojo/text!gofish/template/ErrorPage.html'
 ], function(declare, _WidgetBase, _TemplatedMixin, entities, template) {
     
     return declare([_WidgetBase, _TemplatedMixin], {

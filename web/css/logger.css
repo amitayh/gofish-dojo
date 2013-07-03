@@ -1,0 +1,11 @@
+.gofish-logger {
+    height: 250px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-left: 0;
+}
+
+.gofish-logger li {
+    list-style: none;
+}

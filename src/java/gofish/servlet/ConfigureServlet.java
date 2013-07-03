@@ -36,10 +36,10 @@ public class ConfigureServlet extends AjaxServlet {
     private Config getConfig(HttpServletRequest request) {
         Config config = new Config();
         
-        config.setNumHumanPlayers(getInteger(request, "humanPlayers"));
-        config.setNumComputerPlayers(getInteger(request, "computerPlayers"));
-        config.setAllowMutipleRequests(getBoolean(request, "allowMultipleRequests"));
-        config.setForceShowOfSeries(getBoolean(request, "forceShowOfSeries"));
+        config.setNumHumanPlayers(ServletUtils.getInteger(request, "humanPlayers"));
+        config.setNumComputerPlayers(ServletUtils.getInteger(request, "computerPlayers"));
+        config.setAllowMutipleRequests(ServletUtils.getBoolean(request, "allowMultipleRequests"));
+        config.setForceShowOfSeries(ServletUtils.getBoolean(request, "forceShowOfSeries"));
         
         return config;
     }
@@ -54,15 +54,6 @@ public class ConfigureServlet extends AjaxServlet {
         } catch (AddPlayerException e) {
             throw new ServletException(e);
         }
-    }
-    
-    private int getInteger(HttpServletRequest request, String name) {
-        return Integer.parseInt(request.getParameter(name));
-    }
-    
-    private boolean getBoolean(HttpServletRequest request, String name) {
-        String parameter = request.getParameter(name);
-        return (parameter != null) ? parameter.equals("true") : false;
     }
     
     public static class StartGameResult {

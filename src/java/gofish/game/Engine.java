@@ -66,6 +66,10 @@ public class Engine {
         return eventQueue.subList(startIndex, eventQueue.size());
     }
     
+    public int getTotalNumEvents() {
+        return eventQueue.size();
+    }
+    
     public void addPlayer(Player player) throws AddPlayerException {
         String name = player.getName();
         if (name.isEmpty()) {
@@ -90,13 +94,13 @@ public class Engine {
         }
     }
     
+    private void dealCards() {
+        
+    }
+    
     private void startGame() {
         status = Status.STARTED;
         eventQueue.add(new StartGameEvent());
-    }
-
-    private void dealCards() {
-        
     }
 
 }

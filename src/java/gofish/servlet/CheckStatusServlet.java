@@ -1,7 +1,10 @@
 package gofish.servlet;
 
 import gofish.game.Engine;
+import gofish.game.event.Event;
 import gofish.game.player.PlayersList;
+import java.util.Date;
+import java.util.List;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -12,7 +15,29 @@ public class CheckStatusServlet extends AjaxServlet {
     @Override
     protected Object getData(HttpServletRequest request) throws Exception {
         HttpSession session = request.getSession(true);
-        return new CheckStatusResult(getEngine(), session);
+        Engine engine = getEngine();
+        
+        // Always include game status and player ID from session
+        CheckStatusResult result = new CheckStatusResult();
+        result.status = engine.getStatus();
+        result.playerId = (Integer) session.getAttribute("playerId");
+        
+        // Add additional information as needed
+        if (ServletUtils.getBoolean(request, "includePlayers")) {
+            result.players = engine.getPlayers();
+            result.totalPlayers = engine.getConfig().getTotalNumPlayers();
+        }
+        
+        Integer lastEvent = ServletUtils.getInteger(request, "lastEvent");
+        if (lastEvent != null) {
+            result.events = engine.getEvents(lastEvent);
+            result.totalEvents = engine.getTotalNumEvents();
+        }
+        
+        // Save time to check timeouts
+        session.setAttribute("lastSeen", new Date());
+        
+        return result;
     }
     
     private static class CheckStatusResult {
@@ -23,16 +48,11 @@ public class CheckStatusServlet extends AjaxServlet {
         
         public PlayersList players;
         
-        public int totalPlayers;
+        public Integer totalPlayers;
         
-        public CheckStatusResult(Engine engine, HttpSession session) {
-            status = engine.getStatus();
-            playerId = (Integer) session.getAttribute("playerId");
-            if (status != Engine.Status.IDLE) {
-                players = engine.getPlayers();
-                totalPlayers = engine.getConfig().getTotalNumPlayers();
-            }
-        }
+        public List<Event> events;
+        
+        public Integer totalEvents;
         
     }
     

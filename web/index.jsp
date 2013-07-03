@@ -8,16 +8,17 @@
         <link rel="stylesheet" type="text/css" href="css/gofish.css">
     </head>
     <body>
-        <div id="container" class="container"></div>
+        <div class="container">
+            <h1>Global Header</h1>
+            <div id="game"></div>
+        </div>
         
         <script src="js/config.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.0/dojo/dojo.js"></script>
         <script>
-            require(['dojo/dom', 'gofish/game', 'dojo/domReady!'], function(dom, Game) {
+            require(['dojo/dom', 'gofish/Game', 'dojo/domReady!'], function(dom, Game) {
                 // DOM is ready, create main view and run game
-                var container = dom.byId('container'),
-                    game = new Game(container);
-
+                var game = new Game(dom.byId('game'));
                 game.run();
             });
         </script>

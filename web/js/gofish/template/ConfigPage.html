@@ -1,0 +1,46 @@
+<div class="form-inline modal">
+    <div class="modal-header">
+        <h3>Game Settings</h3>
+    </div>
+    <div class="modal-body">
+        <h4>Number of players</h4>
+        <p>
+            <label>
+                Human players:
+                <input type="number" class="input-mini"
+                    data-dojo-attach-point="humanPlayers"
+                    data-dojo-attach-event="change: setHumanPlayers">
+            </label>
+            ,
+            <label>
+                bots:
+                <input type="number" class="input-mini"
+                    data-dojo-attach-point="computerPlayers"
+                    data-dojo-attach-event="change: setComputerPlayers">
+            </label>
+        </p>
+        <h4>General</h4>
+        <p>
+            <label class="checkbox">
+                <input type="checkbox"
+                    data-dojo-attach-point="allowMultipleRequests"
+                    data-dojo-attach-event="click: setAllowMultipleRequests">
+                Allow multiple requests
+            </label>
+        </p>
+        <p>
+            <label class="checkbox">
+                <input type="checkbox"
+                    data-dojo-attach-point="forceShowOfSeries"
+                    data-dojo-attach-event="click: setForceShowOfSeries">
+                Force show completed series
+            </label>
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary"
+            data-dojo-attach-event="click: onStartGame">
+            Start game
+        </button>
+    </div>
+</div>

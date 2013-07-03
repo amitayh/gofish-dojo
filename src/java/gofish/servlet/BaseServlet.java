@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 abstract public class BaseServlet extends HttpServlet {
     
@@ -38,6 +39,10 @@ abstract public class BaseServlet extends HttpServlet {
             application.setAttribute("game.engine", engine);
         }
         return engine;
+    }
+    
+    protected boolean isLoggedIn(HttpSession session) {
+        return (session.getAttribute("playerId") != null);
     }
 
 }

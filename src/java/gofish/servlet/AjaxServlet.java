@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 abstract public class AjaxServlet extends BaseServlet {
     
@@ -46,10 +45,6 @@ abstract public class AjaxServlet extends BaseServlet {
         out.flush();
         out.close();
         
-    }
-    
-    protected boolean isLoggedIn(HttpSession session) {
-        return (session.getAttribute("playerId") != null);
     }
     
     abstract protected Object getData(HttpServletRequest request) throws Exception;
