@@ -9,7 +9,7 @@
     </head>
     <body>
         <div class="container">
-            <h1>Global Header</h1>
+            <p>Global Header</p>
             <div id="game"></div>
         </div>
         

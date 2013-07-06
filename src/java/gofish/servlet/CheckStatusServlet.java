@@ -3,6 +3,7 @@ package gofish.servlet;
 import gofish.game.Engine;
 import gofish.game.event.Event;
 import gofish.game.player.PlayersList;
+import gofish.servlet.observer.EventsQueueObserver;
 import java.util.Date;
 import java.util.List;
 import javax.servlet.annotation.WebServlet;
@@ -30,14 +31,19 @@ public class CheckStatusServlet extends AjaxServlet {
         
         Integer lastEvent = ServletUtils.getInteger(request, "lastEvent");
         if (lastEvent != null) {
-            result.events = engine.getEvents(lastEvent);
-            result.totalEvents = engine.getTotalNumEvents();
+            EventsQueueObserver eventsQueue = getEventsQueue();
+            result.events = eventsQueue.getEvents(lastEvent);
+            result.totalEvents = eventsQueue.getTotalNumEvents();
         }
         
         // Save time to check timeouts
         session.setAttribute("lastSeen", new Date());
         
         return result;
+    }
+    
+    private EventsQueueObserver getEventsQueue() {
+        return (EventsQueueObserver) getServletContext().getAttribute("game.events");
     }
     
     private static class CheckStatusResult {

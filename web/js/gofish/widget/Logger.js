@@ -10,7 +10,7 @@ define([
         timestampOptions: {selector: 'time', timePattern: 'HH:mm'},
 
         buildRendering: function() {
-            this.domNode = domConstruct.create('ul', {className: 'gofish-logger'});
+            this.domNode = domConstruct.create('ul', {className: 'logger'});
         },
 
         log: function(message) {

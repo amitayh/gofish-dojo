@@ -3,6 +3,7 @@ package gofish.servlet;
 import gofish.game.Engine;
 import gofish.game.config.Config;
 import gofish.game.engine.AddPlayerException;
+import gofish.game.engine.GameStatusException;
 import gofish.game.player.Computer;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -51,7 +52,7 @@ public class ConfigureServlet extends AjaxServlet {
                 String name = botNames[i];
                 engine.addPlayer(new Computer(name));
             }
-        } catch (AddPlayerException e) {
+        } catch (GameStatusException | AddPlayerException e) {
             throw new ServletException(e);
         }
     }

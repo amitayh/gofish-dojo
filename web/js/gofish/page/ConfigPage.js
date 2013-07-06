@@ -1,10 +1,9 @@
 define([
     'dojo/_base/declare',
-    'dojo/on',
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
     'dojo/text!gofish/template/ConfigPage.html'
-], function(declare, on, _WidgetBase, _TemplatedMixin, template) {
+], function(declare, _WidgetBase, _TemplatedMixin, template) {
     
     var MinTotalPlayers = 3,
         MaxTotalPlayers = 6,

@@ -105,7 +105,7 @@ define([
 
         getPlayerName: function(player) {
             var name = player.getName(true);
-            return (player.getId() == this.playerId) ? '<strong>' + name + '</strong>' : name;
+            return (player.getId() === this.playerId) ? '<strong>' + name + '</strong>' : name;
         }
         
     });

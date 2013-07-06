@@ -1,7 +1,10 @@
 package gofish.servlet;
 
 import gofish.game.Engine;
+import gofish.servlet.observer.CardsDealerObserver;
+import gofish.servlet.observer.EventsQueueObserver;
 import java.io.IOException;
+import java.util.Observer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -35,8 +38,18 @@ abstract public class BaseServlet extends HttpServlet {
         ServletContext application = getServletContext();
         Engine engine = (Engine) application.getAttribute("game.engine");
         if (engine == null) {
+            // Create game engine
             engine = new Engine();
+            
+            // Add observers
+            Observer cardsDealer = new CardsDealerObserver();
+            Observer eventsQueue = new EventsQueueObserver();
+            engine.addObserver(cardsDealer);
+            engine.addObserver(eventsQueue);
+            
+            // Save attributes to servlet context
             application.setAttribute("game.engine", engine);
+            application.setAttribute("game.events", eventsQueue);
         }
         return engine;
     }

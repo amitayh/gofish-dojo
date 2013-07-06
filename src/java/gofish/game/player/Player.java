@@ -1,5 +1,11 @@
 package gofish.game.player;
 
+import gofish.game.card.Card;
+import gofish.game.card.CardsCollection;
+import gofish.game.card.Series;
+import java.util.Collection;
+import java.util.LinkedList;
+
 abstract public class Player {
     
     public enum Type {COMPUTER, HUMAN};
@@ -11,6 +17,10 @@ abstract public class Player {
     private Type type;
     
     private String name;
+    
+    private CardsCollection hand = new CardsCollection();
+    
+    private Collection<Series> completeSeries = new LinkedList<>();
 
     public Player(Type type, String name) {
         id = ++numInstances;
@@ -36,6 +46,10 @@ abstract public class Player {
     
     public boolean isComputer() {
         return (type == Type.COMPUTER);
+    }
+    
+    public void addCard(Card card) {
+        
     }
 
 }
