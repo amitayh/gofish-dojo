@@ -1,11 +1,13 @@
 package gofish.servlet;
 
 import gofish.game.Engine;
+import gofish.game.config.Config;
 import gofish.game.event.Event;
 import gofish.game.player.PlayersList;
 import gofish.servlet.observer.EventsQueueObserver;
 import java.util.Date;
 import java.util.List;
+import javax.servlet.ServletContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -24,9 +26,10 @@ public class CheckStatusServlet extends AjaxServlet {
         result.playerId = (Integer) session.getAttribute("playerId");
         
         // Add additional information as needed
-        if (ServletUtils.getBoolean(request, "includePlayers")) {
+        Config config = engine.getConfig();
+        if (config != null && ServletUtils.getBoolean(request, "includePlayers")) {
             result.players = engine.getPlayers();
-            result.totalPlayers = engine.getConfig().getTotalNumPlayers();
+            result.totalPlayers = config.getTotalNumPlayers();
         }
         
         Integer lastEvent = ServletUtils.getInteger(request, "lastEvent");
@@ -43,7 +46,8 @@ public class CheckStatusServlet extends AjaxServlet {
     }
     
     private EventsQueueObserver getEventsQueue() {
-        return (EventsQueueObserver) getServletContext().getAttribute("game.events");
+        ServletContext application = getServletContext();
+        return (EventsQueueObserver) application.getAttribute("game.events");
     }
     
     private static class CheckStatusResult {

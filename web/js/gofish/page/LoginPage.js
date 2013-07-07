@@ -3,14 +3,16 @@ define([
     'dojo/_base/lang',
     'dojo/_base/event',
     'dojo/dom-construct',
+    'dojo/dom-class',
     'dojo/query',
+    'dojo/topic',
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
     'dojox/html/entities',
     'gofish/data-service',
     'dojo/text!gofish/template/LoginPage.html'
-], function(declare, lang, event, domConstruct, query, _WidgetBase, _TemplatedMixin,
-            entities, dataService, template) {
+], function(declare, lang, event, domConstruct, domClass, query, topic,
+            _WidgetBase, _TemplatedMixin, entities, dataService, template) {
     
     var UpdateInterval = 1500;
 
@@ -74,6 +76,10 @@ define([
                     case 'STARTED':
                         self.emit('GameStarted', {playerId: response.playerId});
                         break;
+                    
+                    default:
+                        topic.publish('gofish/restart', {});
+                        break;
                 }
             });
         },
@@ -103,7 +109,7 @@ define([
 
         setPlayerName: function(li, name) {
             li.innerHTML = entities.encode(name);
-            li.className = ''; // Remove "waiting" class
+            domClass.remove(li, 'waiting');
         },
 
         onJoinGame: function(e) {},

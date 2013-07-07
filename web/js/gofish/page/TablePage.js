@@ -3,6 +3,7 @@ define([
     'dojo/_base/array',
     'dojo/_base/lang',
     'dojo/dom-construct',
+    'dojo/topic',
     'dojo/Deferred',
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
@@ -11,9 +12,9 @@ define([
     'gofish/widget/Logger',
     'gofish/widget/Player',
     'dojo/text!gofish/template/TablePage.html'
-], function(declare, array, lang, domConstruct, Deferred, _WidgetBase,
-            _TemplatedMixin, _WidgetsInTemplateMixin, dataService,
-            Logger, Player, template) {
+], function(declare, array, lang, domConstruct, topic, Deferred,
+            _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin,
+            dataService, Logger, Player, template) {
 
     var UpdateInterval = 1500;
     
@@ -24,6 +25,8 @@ define([
         updateTimer: null,
 
         players: {},
+        
+        currentPlayer: null,
 
         onLoad: function() {
             this.lastEvent = 0;
@@ -39,10 +42,7 @@ define([
         },
 
         getLastEvents: function() {
-            var self = this,
-                options = {lastEvent: this.lastEvent},
-                callback = lang.hitch(this, 'getLastEvents');
-
+            var self = this, options = {lastEvent: this.lastEvent};
             dataService.checkStatus(options)
                 .then(function(response) {
                     self.lastEvent = response.totalEvents;
@@ -50,6 +50,7 @@ define([
                 })
                 .then(function() {
                     // Poll the server after all events have been played
+                    var callback = lang.hitch(self, 'getLastEvents');
                     self.updateTimer = setTimeout(callback, UpdateInterval);
                 });
         },
@@ -78,29 +79,23 @@ define([
         },
 
         playPlayerJoinEvent: function(event) {
-            var self = this,
-                player = new Player(event.player),
-                deferred = new Deferred();
-
+            var player = new Player(event.player);
             this.players[player.getId()] = player;
-            setTimeout(function() {
-                domConstruct.place(player.domNode, self.playersList);
-                self.logger.log('Player joined: ' + self.getPlayerName(player));
-                deferred.resolve();
-            }, 500);
-
-            return deferred.promise;
+            domConstruct.place(player.domNode, this.playersList);
+            this.logger.log('Player joined: ' + this.getPlayerName(player));
         },
 
         playStartGameEvent: function() {
-            var deferred = new Deferred(), logger = this.logger;
-
-            setTimeout(function() {
-                logger.log('Game started');
-                deferred.resolve();
-            }, 500);
-
-            return deferred.promise;
+            this.logger.log('Game started');
+        },
+        
+        playChangeTurnEvent: function(event) {
+            if (this.currentPlayer) {
+                this.currentPlayer.setCurrentPlayer(false);
+            }
+            var currentPlayer = this.currentPlayer = this.players[event.currentPlayerId];
+            this.logger.log(this.getPlayerName(currentPlayer) + ' is playing');
+            currentPlayer.setCurrentPlayer(true);
         },
 
         getPlayerName: function(player) {

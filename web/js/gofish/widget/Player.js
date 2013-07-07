@@ -1,12 +1,13 @@
 define([
     'dojo/_base/declare',
+    'dojo/dom-class',
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
     'dijit/_WidgetsInTemplateMixin',
     'dojox/html/entities',
     'gofish/widget/CardsList',
     'dojo/text!gofish/template/Player.html'
-], function(declare, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin,
+], function(declare, domClass, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin,
             entities, CardsList, template) {
 
     return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
@@ -30,6 +31,10 @@ define([
         getName: function(safe) {
             var name = this.data.name;
             return safe ? entities.encode(name) : name;
+        },
+
+        setCurrentPlayer: function(flag) {
+            domClass[flag ? 'add' : 'remove'](this.domNode, 'current');
         }
 
     });

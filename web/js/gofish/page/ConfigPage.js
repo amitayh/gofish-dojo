@@ -93,13 +93,11 @@ define([
             this.model.forceShowOfSeries = this.forceShowOfSeries.checked;
         },
                 
-        getData: function() {
-            return this.model;
+        startGame: function() {
+            this.emit('StartGame', {data: this.model});
         },
         
-        onStartGame: function() {
-            // Fires when the "start game" button is clicked
-        }
+        onStartGame: function(e) {}
         
     });
     

@@ -2,12 +2,13 @@ define([
     'dojo/_base/declare',
     'dojo/_base/lang',
     'dojo/dom-construct',
+    'dojo/topic',
     'gofish/data-service',
     'gofish/page/ConfigPage',
     'gofish/page/LoginPage',
     'gofish/page/TablePage',
     'gofish/page/ErrorPage'
-], function(declare, lang, domConstruct, dataService,
+], function(declare, lang, domConstruct, topic, dataService,
             ConfigPage, LoginPage, TablePage, ErrorPage) {
 
     return declare(null, {
@@ -33,6 +34,7 @@ define([
             configPage.on('startGame', lang.hitch(this, 'startGame'));
             loginPage.on('joinGame', lang.hitch(this, 'joinGame'));
             loginPage.on('gameStarted', lang.hitch(this, 'gameStarted'));
+            topic.subscribe('gofish/restart', lang.hitch(this, 'restartGame'));
         },
 
         run: function() {
@@ -59,8 +61,12 @@ define([
             });
         },
         
-        startGame: function() {
-            var self = this, configData = this.pages.config.getData();
+        restartGame: function() {
+            this.loadPage('config');
+        },
+        
+        startGame: function(event) {
+            var self = this, configData = event.data;
             dataService.configure(configData).then(function(response) {
                 switch (response.status) {
                     case 'CONFIGURED':

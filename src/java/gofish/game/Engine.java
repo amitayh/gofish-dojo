@@ -5,11 +5,13 @@ import gofish.game.config.ValidationException;
 import gofish.game.engine.AddPlayerException;
 import gofish.game.engine.GameStatusException;
 import gofish.game.engine.StartGameException;
+import gofish.game.event.ChangeTurnEvent;
 import gofish.game.event.Event;
 import gofish.game.event.PlayerJoinEvent;
 import gofish.game.event.StartGameEvent;
 import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
+import gofish.game.player.action.Action;
 import java.util.Observable;
 
 public class Engine extends Observable {
@@ -35,6 +37,8 @@ public class Engine extends Observable {
     
     private PlayersList players;
     
+    private int currentPlayer = -1;
+    
     public void configure(Config config) throws GameStatusException, ValidationException {
         ensureStatus(Status.IDLE);
         config.validate();
@@ -46,6 +50,7 @@ public class Engine extends Observable {
     public void reset() {
         config = null;
         players = null;
+        currentPlayer = -1;
         status = Status.IDLE;
     }
     
@@ -95,6 +100,24 @@ public class Engine extends Observable {
         
         status = Status.STARTED;
         dispatchEvent(new StartGameEvent());
+        
+        nextTurn();
+    }
+    
+    public void performPlayerAction(Action action) {
+        
+    }
+    
+    private void nextTurn() {
+        do {
+            // Cycle players who are still playing
+            currentPlayer = (currentPlayer + 1) % players.size();
+        } while (!getCurrentPlayer().isPlaying());
+        dispatchEvent(new ChangeTurnEvent(getCurrentPlayer()));
+    }
+    
+    private Player getCurrentPlayer() {
+        return players.get(currentPlayer);
     }
     
     private void ensureStatus(Status requiredStatus) throws GameStatusException {
