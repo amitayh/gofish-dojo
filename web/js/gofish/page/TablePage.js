@@ -8,13 +8,14 @@ define([
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
     'dijit/_WidgetsInTemplateMixin',
+    'dojox/html/entities',
     'gofish/data-service',
     'gofish/widget/Logger',
     'gofish/widget/Player',
     'dojo/text!gofish/template/TablePage.html'
 ], function(declare, array, lang, domConstruct, topic, Deferred,
             _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin,
-            dataService, Logger, Player, template) {
+            entities, dataService, Logger, Player, template) {
 
     var UpdateInterval = 1500;
     
@@ -80,9 +81,12 @@ define([
 
         playPlayerJoinEvent: function(event) {
             var player = new Player(event.player);
-            this.players[player.getId()] = player;
+            this.players[player.get('id')] = player;
             domConstruct.place(player.domNode, this.playersList);
             this.logger.log('Player joined: ' + this.getPlayerName(player));
+            if (player.get('id') === this.playerId) {
+                player.revealCards();
+            }
         },
 
         playStartGameEvent: function() {
@@ -99,8 +103,8 @@ define([
         },
 
         getPlayerName: function(player) {
-            var name = player.getName(true);
-            return (player.getId() === this.playerId) ? '<strong>' + name + '</strong>' : name;
+            var name = entities.encode(player.get('name'));
+            return (player.get('id') === this.playerId) ? '<strong>' + name + '</strong>' : name;
         }
         
     });

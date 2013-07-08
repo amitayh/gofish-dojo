@@ -14,23 +14,15 @@ define([
 
         templateString: template,
 
-        constructor: function(data) {
-            this.inherited(arguments);
-            this.data = data;
-        },
-
         postCreate: function() {
             this.inherited(arguments);
-            this.name.innerHTML = this.getName(true);
+            this.nameNode.innerHTML = entities.encode(this.name);
+            this.numberOfCards.innerHTML = this.hand.length;
+            this.handWidget.setCards(this.hand);
         },
-
-        getId: function() {
-            return this.data.id;
-        },
-
-        getName: function(safe) {
-            var name = this.data.name;
-            return safe ? entities.encode(name) : name;
+        
+        revealCards: function() {
+            this.handWidget.revealCards();
         },
 
         setCurrentPlayer: function(flag) {

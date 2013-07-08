@@ -4,7 +4,9 @@ import java.util.Collection;
 
 public class Card {
     
-    private final String id;
+    private static int numInstances = 0;
+    
+    private final int id;
     
     private final String name;
     
@@ -17,7 +19,7 @@ public class Card {
     private final String[] properties;
     
     public Card(String name, String... properties) {
-        id = name.replace(' ', '_').toLowerCase();
+        id = ++numInstances;
         this.name = name;
         this.properties = properties;
     }
@@ -26,7 +28,7 @@ public class Card {
         this(name, properties.toArray(new String[properties.size()]));
     }
     
-    public String getId() {
+    public int getId() {
         return id;
     }
     

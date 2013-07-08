@@ -1,0 +1,22 @@
+.cards-list {
+    list-style: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.card {
+    background: #fff;
+    display: block;
+    width: 36px;
+    height: 64px;
+    float: left;
+    margin-left: -15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-align: center;
+    border: 1px solid;
+}
+
+.card:first-child {
+    margin-left: 0;
+}
