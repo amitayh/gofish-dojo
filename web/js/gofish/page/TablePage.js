@@ -85,7 +85,7 @@ define([
             domConstruct.place(player.domNode, this.playersList);
             this.logger.log('Player joined: ' + this.getPlayerName(player));
             if (player.get('id') === this.playerId) {
-                player.revealCards();
+                player.enableControls();
             }
         },
 

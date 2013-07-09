@@ -1,8 +1,15 @@
 <li class="player">
     <h3 data-dojo-attach-point="nameNode"></h3>
-    <p>
+    <p class="info">
         <strong>Cards</strong>: <span data-dojo-attach-point="numberOfCards">0</span><br>
         <strong>Series</strong>: <span data-dojo-attach-point="numberOfSeries">0</span>
     </p>
+    <p data-dojo-attach-point="controls" class="controls hide">
+        <button>Drop series</button>
+        |
+        <button>Skip turn</button>
+        <button>Quit game</button>
+    </p>
     <div data-dojo-type="gofish/widget/CardsList" data-dojo-attach-point="handWidget"></div>
+    <div data-dojo-attach-point="completeSeries" class="complete-series"></div>
 </li>

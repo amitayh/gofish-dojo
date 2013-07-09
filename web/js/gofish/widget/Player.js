@@ -21,7 +21,8 @@ define([
             this.handWidget.setCards(this.hand);
         },
         
-        revealCards: function() {
+        enableControls: function() {
+            domClass.remove(this.controls, 'hide');
             this.handWidget.revealCards();
         },
 
