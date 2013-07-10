@@ -16,9 +16,17 @@ define([
 
         postCreate: function() {
             this.inherited(arguments);
-            this.nameNode.innerHTML = entities.encode(this.name);
+            this.nameNode.innerHTML = entities.encode(this.playerName);
             this.numberOfCards.innerHTML = this.hand.length;
             this.handWidget.setCards(this.hand);
+        },
+        
+        getId: function() {
+            return this.playerId;
+        },
+        
+        getName: function() {
+            return this.playerName;
         },
         
         enableControls: function() {

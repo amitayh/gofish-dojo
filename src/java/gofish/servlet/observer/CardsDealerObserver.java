@@ -28,7 +28,7 @@ public class CardsDealerObserver implements Observer {
         }
     }
 
-    private synchronized void dealCards(Engine engine) {
+    private void dealCards(Engine engine) {
         PlayersList players = engine.getPlayers();
         Deck deck = new Deck();
         deck.shuffle();

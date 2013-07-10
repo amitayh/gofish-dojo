@@ -17,7 +17,10 @@ define([
             var container = this.domNode, card;
             this.cards = {};
             for (var i = 0, l = cards.length; i < l; i++) {
-                card = new Card(cards[i]);
+                card = new Card({
+                    cardId: cards[i].id,
+                    cardName: cards[i].name
+                });
                 this.cards[card.get('id')] = card;
                 domConstruct.place(card.domNode, container);
             }

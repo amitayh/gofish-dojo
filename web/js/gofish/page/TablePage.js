@@ -80,11 +80,15 @@ define([
         },
 
         playPlayerJoinEvent: function(event) {
-            var player = new Player(event.player);
-            this.players[player.get('id')] = player;
+            var player = new Player({
+                playerId: event.player.id,
+                playerName: event.player.name,
+                hand: event.player.hand
+            });
+            this.players[player.getId()] = player;
             domConstruct.place(player.domNode, this.playersList);
             this.logger.log('Player joined: ' + this.getPlayerName(player));
-            if (player.get('id') === this.playerId) {
+            if (player.getId() === this.playerId) {
                 player.enableControls();
             }
         },
@@ -103,8 +107,8 @@ define([
         },
 
         getPlayerName: function(player) {
-            var name = entities.encode(player.get('name'));
-            return (player.get('id') === this.playerId) ? '<strong>' + name + '</strong>' : name;
+            var name = entities.encode(player.getName());
+            return (player.getId() === this.playerId) ? '<strong>' + name + '</strong>' : name;
         }
         
     });

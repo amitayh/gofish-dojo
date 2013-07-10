@@ -2,7 +2,9 @@ package gofish.servlet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import gofish.game.card.Card;
 import gofish.game.player.Player;
+import gofish.servlet.json.serializer.CardSerializer;
 import gofish.servlet.json.serializer.PlayerSerializer;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,9 +22,8 @@ abstract public class AjaxServlet extends BaseServlet {
     
     static {
         GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(Card.class, new CardSerializer());
         builder.registerTypeAdapter(Player.class, new PlayerSerializer());
-//        builder.registerTypeAdapter(PlayersList.class, new PlayersListSerializer());
-//        builder.registerTypeAdapter(Exception.class, new ExceptionSerializer());
         gson = builder.create();
     }
 

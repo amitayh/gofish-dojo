@@ -14,9 +14,17 @@ define([
             });
         },
         
+        getId: function() {
+            return this.cardId;
+        },
+        
+        getName: function() {
+            return this.cardName;
+        },
+        
         reveal: function() {
-            var className = this.name.replace(/ /g, '_').toLowerCase();
-            this.domNode.innerHTML = this.name;
+            var className = this.cardName.replace(/ /g, '_').toLowerCase();
+            this.domNode.innerHTML = this.cardName;
             domClass.add(this.domNode, className);
         }
 
