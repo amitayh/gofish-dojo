@@ -14,4 +14,12 @@ public class AskCardAction extends Action {
         this.cardName = cardName;
     }
 
+    public Player getAskFrom() {
+        return askFrom;
+    }
+
+    public String getCardName() {
+        return cardName;
+    }
+
 }

@@ -4,6 +4,8 @@ import gofish.game.Engine;
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
 import gofish.game.card.Series;
+import gofish.game.player.action.Action;
+import gofish.game.player.action.DropSeriesAction;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -17,9 +19,9 @@ abstract public class Player {
     
     private final int id;
     
-    private Type type;
+    private final Type type;
     
-    private String name;
+    private final String name;
     
     private boolean playing = true;
     
@@ -61,18 +63,10 @@ abstract public class Player {
         return hand;
     }
     
-    /**
-     * Add card to hand
-     * 
-     * @param card
-     * @return if the added card completed a series, the series is returned, null otherwise
-     */
-    public Series addCard(Card card) {
+    public void addCard(Card card) {
         if (!hand.contains(card)) {
             hand.add(card);
-            return checkComplete();
         }
-        return null;
     }
     
     public void removeCard(Card card) {
@@ -82,12 +76,21 @@ abstract public class Player {
         hand.remove(card);
     }
     
+    public void dropCompleteSeries(Engine engine) {
+        Series series = getCompleteSeries();
+        while (series != null) {
+            Action action = new DropSeriesAction(this, series);
+            engine.performPlayerAction(action);
+            series = getCompleteSeries();
+        }
+    }
+    
     /**
      * Check if there's a complete series in hand
      * 
      * @return the completed series if it exists, null otherwise
      */
-    private Series checkComplete() {
+    private Series getCompleteSeries() {
         for (String property : hand.properties()) {
             if (hand.seriesSize(property) == Engine.COMPLETE_SERIES_SIZE) {
                 Set<Card> cards = hand.removeByProperty(property);

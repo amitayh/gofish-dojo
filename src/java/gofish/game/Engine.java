@@ -1,18 +1,26 @@
 package gofish.game;
 
+import gofish.game.card.Card;
+import gofish.game.card.CardsCollection;
 import gofish.game.config.Config;
 import gofish.game.config.ValidationException;
 import gofish.game.engine.AddPlayerException;
 import gofish.game.engine.GameStatusException;
 import gofish.game.engine.StartGameException;
+import gofish.game.event.CardMovedEvent;
 import gofish.game.event.ChangeTurnEvent;
 import gofish.game.event.Event;
+import gofish.game.event.PlayerActionEvent;
 import gofish.game.event.PlayerJoinEvent;
+import gofish.game.event.PlayerOutEvent;
 import gofish.game.event.StartGameEvent;
+import gofish.game.player.Computer;
 import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
 import gofish.game.player.action.Action;
+import gofish.game.player.action.AskCardAction;
 import java.util.Observable;
+import java.util.Set;
 
 public class Engine extends Observable {
     
@@ -37,7 +45,13 @@ public class Engine extends Observable {
     
     private PlayersList players;
     
-    private int currentPlayer = -1;
+    /**
+     * Map containing all cards still available in the game
+     * (cards that don't belong to complete series)
+     */
+    private CardsCollection availableCards = new CardsCollection();
+    
+    private int currentPlayerIndex = -1;
     
     public void configure(Config config) throws GameStatusException, ValidationException {
         ensureStatus(Status.IDLE);
@@ -50,7 +64,8 @@ public class Engine extends Observable {
     public void reset() {
         config = null;
         players = null;
-        currentPlayer = -1;
+        availableCards.clear();
+        currentPlayerIndex = -1;
         status = Status.IDLE;
     }
     
@@ -64,6 +79,10 @@ public class Engine extends Observable {
     
     public PlayersList getPlayers() {
         return players;
+    }
+    
+    public Set<Card> findCards(String property) {
+        return availableCards.getByProperty(property);
     }
     
     public void addPlayer(Player player) throws GameStatusException, AddPlayerException {
@@ -96,7 +115,13 @@ public class Engine extends Observable {
         if (!gameIsFull()) {
             throw new StartGameException("Game is not full");
         }
-        // TODO: check cards
+        
+        setAvailableCards();
+        int numCards = availableCards.size();
+        if (numCards < MIN_NUM_CARDS) {
+            throw new StartGameException("Not enough cards (minimum: " +
+                MIN_NUM_CARDS + ", actual: " + numCards + ")");
+        }
         
         status = Status.STARTED;
         dispatchEvent(new StartGameEvent());
@@ -105,19 +130,105 @@ public class Engine extends Observable {
     }
     
     public void performPlayerAction(Action action) {
+        if (action.getPlayer() != getCurrentPlayer()) {
+            throw new IllegalStateException("Only current player can perform actions");
+        }
         
+        dispatchEvent(new PlayerActionEvent(action));
+        
+        if (action instanceof AskCardAction) {
+            playTurn((AskCardAction) action);
+        }
+    }
+    
+    private void playTurn(AskCardAction action) {
+        if (validateCardRequest(action)) {
+            boolean anotherTurn = false;
+            
+            // Check if player being asked has the requested card
+            Player player = action.getPlayer();
+            Player askFrom = action.getAskFrom();
+            String cardName = action.getCardName();
+            Card card = askFrom.getHand().getCard(cardName);
+            if (card != null) {
+                moveCard(player, askFrom, card);
+                if (player.isPlaying() && players.size() > 1) {
+                    anotherTurn = config.getAllowMutipleRequests();
+                }
+            }
+            
+            if (!anotherTurn) {
+                nextTurn();
+            }
+        }
+    }
+    
+    private boolean validateCardRequest(AskCardAction action) {
+        boolean result = false;
+        
+        // Check if requested card is in the game
+        Card card = availableCards.getCard(action.getCardName());
+        if (card != null) {
+            // Check that the player is allowed to ask for this card
+            CardsCollection hand = action.getPlayer().getHand();
+            for (String property : card.getProperties()) {
+                if (hand.hasSeries(property)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private void moveCard(Player from, Player to, Card card) {
+        from.removeCard(card);
+        to.addCard(card);
+        dispatchEvent(new CardMovedEvent(from, to, card));
+        checkPlayer(from);
+    }
+    
+    private void checkPlayer(Player player) {
+        if (!player.isPlaying()) {
+            // No cards left - player is out
+            CardsCollection hand = player.getHand();
+            availableCards.removeAll(hand);
+            hand.clear();
+            dispatchEvent(new PlayerOutEvent(player));
+        }
     }
     
     private void nextTurn() {
+        Player currentPlayer;
         do {
+            // TODO: check endless loop
             // Cycle players who are still playing
-            currentPlayer = (currentPlayer + 1) % players.size();
-        } while (!getCurrentPlayer().isPlaying());
-        dispatchEvent(new ChangeTurnEvent(getCurrentPlayer()));
+            currentPlayerIndex = nextPlayerIndex();
+            currentPlayer = getCurrentPlayer();
+        } while (!currentPlayer.isPlaying());
+        
+        dispatchEvent(new ChangeTurnEvent(currentPlayer));
+        
+        if (currentPlayer.isComputer()) {
+            // Computer players play automatically
+            Computer computerPlayer = (Computer) currentPlayer;
+            computerPlayer.play(this);
+        }
+    }
+    
+    private int nextPlayerIndex() {
+        return (currentPlayerIndex + 1) % players.size();
     }
     
     private Player getCurrentPlayer() {
-        return players.get(currentPlayer);
+        return players.get(currentPlayerIndex);
+    }
+    
+    private void setAvailableCards() {
+        for (Player player : players) {
+            availableCards.addAll(player.getHand());
+        }
     }
     
     private void ensureStatus(Status requiredStatus) throws GameStatusException {
