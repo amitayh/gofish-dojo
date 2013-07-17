@@ -19,6 +19,12 @@ define([
 
     var UpdateInterval = 1500;
     
+    function delayedPromise(delay) {
+        var deferred = new Deferred();
+        setTimeout(deferred.resolve, delay);
+        return deferred.promise;
+    }
+    
     return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
         
         templateString: template,
@@ -63,6 +69,9 @@ define([
 
             // Playback events in sequence using deferred/promise API
             array.forEach(events, function(event) {
+                
+                console.log(event); // Debug
+                
                 var method = self['play' + event.type];
                 if (method) {
                     // Add method to promise chain
@@ -105,10 +114,52 @@ define([
             this.logger.log(this.getPlayerName(currentPlayer) + ' is playing');
             currentPlayer.setCurrentPlayer(true);
         },
+        
+        playAskCardEvent: function(event) {
+            var player = this.players[event.playerId],
+                askFrom = this.players[event.askFromPlayerId];
+            
+            this.logger.log(
+                this.getPlayerName(player) + ' asked ' +
+                this.getPlayerName(askFrom) + ' for card ' +
+                this.getCardName(event.cardName)
+            );
+            
+            return delayedPromise(2000);
+        },
+        
+        playCardMovedEvent: function(event) {
+            var from = this.players[event.fromPlayerId],
+                to = this.players[event.toPlayerId];
+            
+            this.logger.log(
+                this.getPlayerName(from) + ' gave ' +
+                this.getCardName(event.cardName) + ' to ' +
+                this.getPlayerName(to)
+            );
+    
+            return delayedPromise(2000);
+        },
+        
+        playGoFishEvent: function(event) {
+            var player1 = this.players[event.player1Id],
+                player2 = this.players[event.player2Id];
+            
+            this.logger.log(
+                this.getPlayerName(player1) + ' tells ' +
+                this.getPlayerName(player2) + ' to go fish '
+            );
+    
+            return delayedPromise(2000);
+        },
 
         getPlayerName: function(player) {
             var name = entities.encode(player.getName());
             return (player.getId() === this.playerId) ? '<strong>' + name + '</strong>' : name;
+        },
+        
+        getCardName: function(cardName) {
+            return '<em>' + entities.encode(cardName) + '</em>'
         }
         
     });

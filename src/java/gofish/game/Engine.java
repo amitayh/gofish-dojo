@@ -7,14 +7,15 @@ import gofish.game.config.ValidationException;
 import gofish.game.engine.AddPlayerException;
 import gofish.game.engine.GameStatusException;
 import gofish.game.engine.StartGameException;
+import gofish.game.event.AskCardEvent;
 import gofish.game.event.CardMovedEvent;
 import gofish.game.event.ChangeTurnEvent;
 import gofish.game.event.Event;
-import gofish.game.event.PlayerActionEvent;
+import gofish.game.event.GoFishEvent;
 import gofish.game.event.PlayerJoinEvent;
 import gofish.game.event.PlayerOutEvent;
 import gofish.game.event.StartGameEvent;
-import gofish.game.player.Computer;
+import gofish.game.player.ComputerPlayerObserver;
 import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
 import gofish.game.player.action.Action;
@@ -53,6 +54,11 @@ public class Engine extends Observable {
     
     private int currentPlayerIndex = -1;
     
+    public Engine() {
+        // Add observer to make computer players play automatically on their turn
+        addObserver(new ComputerPlayerObserver());
+    }
+    
     public void configure(Config config) throws GameStatusException, ValidationException {
         ensureStatus(Status.IDLE);
         config.validate();
@@ -79,6 +85,10 @@ public class Engine extends Observable {
     
     public PlayersList getPlayers() {
         return players;
+    }
+    
+    public Player getPlayer(Integer playerId) {
+        return players.getPlayerById(playerId);
     }
     
     public Set<Card> findCards(String property) {
@@ -130,11 +140,11 @@ public class Engine extends Observable {
     }
     
     public void performPlayerAction(Action action) {
+//        ensureStatus(Status.STARTED);
+        
         if (action.getPlayer() != getCurrentPlayer()) {
             throw new IllegalStateException("Only current player can perform actions");
         }
-        
-        dispatchEvent(new PlayerActionEvent(action));
         
         if (action instanceof AskCardAction) {
             playTurn((AskCardAction) action);
@@ -142,24 +152,33 @@ public class Engine extends Observable {
     }
     
     private void playTurn(AskCardAction action) {
-        if (validateCardRequest(action)) {
-            boolean anotherTurn = false;
-            
-            // Check if player being asked has the requested card
-            Player player = action.getPlayer();
-            Player askFrom = action.getAskFrom();
-            String cardName = action.getCardName();
-            Card card = askFrom.getHand().getCard(cardName);
-            if (card != null) {
-                moveCard(player, askFrom, card);
-                if (player.isPlaying() && players.size() > 1) {
-                    anotherTurn = config.getAllowMutipleRequests();
-                }
+        if (!validateCardRequest(action)) {
+            // TODO
+        }
+        
+        boolean anotherTurn = false;
+
+        // Check if player being asked has the requested card
+        Player player = action.getPlayer();
+        Player askFrom = action.getAskFrom();
+        String cardName = action.getCardName();
+        Card card = askFrom.getHand().getCard(cardName);
+        dispatchEvent(new AskCardEvent(player, askFrom, cardName));
+        if (card == null) {
+            // GoFish!
+            dispatchEvent(new GoFishEvent(askFrom, player));
+        } else {
+            // Give away card
+            moveCard(player, askFrom, card);
+            if (player.isPlaying() && players.size() > 1) {
+                anotherTurn = config.getAllowMutipleRequests();
             }
-            
-            if (!anotherTurn) {
-                nextTurn();
-            }
+        }
+
+        if (!anotherTurn) {
+            nextTurn();
+        } else {
+            dispatchEvent(new ChangeTurnEvent(player));
         }
     }
     
@@ -183,10 +202,10 @@ public class Engine extends Observable {
     }
     
     private void moveCard(Player from, Player to, Card card) {
-        from.removeCard(card);
-        to.addCard(card);
+//        from.removeCard(card);
+//        to.addCard(card);
         dispatchEvent(new CardMovedEvent(from, to, card));
-        checkPlayer(from);
+//        checkPlayer(from);
     }
     
     private void checkPlayer(Player player) {
@@ -209,12 +228,6 @@ public class Engine extends Observable {
         } while (!currentPlayer.isPlaying());
         
         dispatchEvent(new ChangeTurnEvent(currentPlayer));
-        
-        if (currentPlayer.isComputer()) {
-            // Computer players play automatically
-            Computer computerPlayer = (Computer) currentPlayer;
-            computerPlayer.play(this);
-        }
     }
     
     private int nextPlayerIndex() {
