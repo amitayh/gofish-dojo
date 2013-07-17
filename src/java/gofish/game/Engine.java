@@ -87,10 +87,6 @@ public class Engine extends Observable {
         return players;
     }
     
-    public Player getPlayer(Integer playerId) {
-        return players.getPlayerById(playerId);
-    }
-    
     public Set<Card> findCards(String property) {
         return availableCards.getByProperty(property);
     }

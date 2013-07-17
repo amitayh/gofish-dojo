@@ -4,15 +4,15 @@ import gofish.game.player.Player;
 
 public class AskCardEvent extends Event {
     
-    public Integer playerId;
+    public Player player;
     
-    public Integer askFromPlayerId;
+    public Player askFrom;
     
     public String cardName;
 
     public AskCardEvent(Player player, Player askFrom, String cardName) {
-        playerId = player.getId();
-        askFromPlayerId = askFrom.getId();
+        this.player = player;
+        this.askFrom = askFrom;
         this.cardName = cardName;
     }
 

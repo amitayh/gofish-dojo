@@ -110,14 +110,14 @@ define([
             if (this.currentPlayer) {
                 this.currentPlayer.setCurrentPlayer(false);
             }
-            var currentPlayer = this.currentPlayer = this.players[event.currentPlayerId];
+            var currentPlayer = this.currentPlayer = this.players[event.currentPlayer.id];
             this.logger.log(this.getPlayerName(currentPlayer) + ' is playing');
             currentPlayer.setCurrentPlayer(true);
         },
         
         playAskCardEvent: function(event) {
-            var player = this.players[event.playerId],
-                askFrom = this.players[event.askFromPlayerId];
+            var player = this.players[event.player.id],
+                askFrom = this.players[event.askFrom.id];
             
             this.logger.log(
                 this.getPlayerName(player) + ' asked ' +
@@ -129,12 +129,12 @@ define([
         },
         
         playCardMovedEvent: function(event) {
-            var from = this.players[event.fromPlayerId],
-                to = this.players[event.toPlayerId];
+            var from = this.players[event.from.id],
+                to = this.players[event.to.id];
             
             this.logger.log(
                 this.getPlayerName(from) + ' gave ' +
-                this.getCardName(event.cardName) + ' to ' +
+                this.getCardName(event.card.name) + ' to ' +
                 this.getPlayerName(to)
             );
     
@@ -142,8 +142,8 @@ define([
         },
         
         playGoFishEvent: function(event) {
-            var player1 = this.players[event.player1Id],
-                player2 = this.players[event.player2Id];
+            var player1 = this.players[event.player1.id],
+                player2 = this.players[event.player2.id];
             
             this.logger.log(
                 this.getPlayerName(player1) + ' tells ' +

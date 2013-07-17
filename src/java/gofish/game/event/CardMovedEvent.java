@@ -5,16 +5,16 @@ import gofish.game.player.Player;
 
 public class CardMovedEvent extends Event {
     
-    public Integer fromPlayerId;
+    public Player from;
     
-    public Integer toPlayerId;
+    public Player to;
     
-    public String cardName;
+    public Card card;
 
     public CardMovedEvent(Player from, Player to, Card card) {
-        fromPlayerId = from.getId();
-        toPlayerId = to.getId();
-        cardName = card.getName();
+        this.from = from;
+        this.to = to;
+        this.card = card;
     }
 
 }

@@ -12,7 +12,7 @@ public class ComputerPlayerObserver implements Observer {
         if (arg instanceof ChangeTurnEvent) {
             Engine engine = (Engine) obj;
             ChangeTurnEvent event = (ChangeTurnEvent) arg;
-            Player player = engine.getPlayer(event.currentPlayerId);
+            Player player = event.currentPlayer;
             if (player.isComputer()) {
                 ((Computer) player).play(engine);
             }

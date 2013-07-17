@@ -4,10 +4,10 @@ import gofish.game.player.Player;
 
 public class ChangeTurnEvent extends Event {
     
-    public Integer currentPlayerId;
+    public Player currentPlayer;
 
     public ChangeTurnEvent(Player currentPlayer) {
-        currentPlayerId = currentPlayer.getId();
+        this.currentPlayer = currentPlayer;
     }
 
 }

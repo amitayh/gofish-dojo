@@ -4,10 +4,10 @@ import gofish.game.player.Player;
 
 public class PlayerOutEvent extends Event {
     
-    public Integer playerId;
+    public Player player;
 
     public PlayerOutEvent(Player player) {
-        playerId = player.getId();
+        this.player = player;
     }
 
 }

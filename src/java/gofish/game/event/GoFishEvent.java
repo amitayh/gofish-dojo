@@ -4,13 +4,13 @@ import gofish.game.player.Player;
 
 public class GoFishEvent extends Event {
     
-    public Integer player1Id;
+    public Player player1;
     
-    public Integer player2Id;
+    public Player player2;
 
     public GoFishEvent(Player player1, Player player2) {
-        player1Id = player1.getId();
-        player2Id = player2.getId();
+        this.player1 = player1;
+        this.player2 = player2;
     }
 
 }
