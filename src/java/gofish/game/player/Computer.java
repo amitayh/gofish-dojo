@@ -3,6 +3,8 @@ package gofish.game.player;
 import gofish.game.Engine;
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
+import gofish.game.engine.GameStatusException;
+import gofish.game.engine.PlayerActionException;
 import gofish.game.player.action.Action;
 import gofish.game.player.action.AskCardAction;
 import gofish.game.player.action.QuitGameAction;
@@ -30,7 +32,11 @@ public class Computer extends Player {
             action = new QuitGameAction(this, e.getMessage());
         }
         
-        engine.performPlayerAction(action);
+        try {
+            engine.performPlayerAction(action);
+        } catch (GameStatusException | PlayerActionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Player playerToAsk(Engine engine) throws Exception {

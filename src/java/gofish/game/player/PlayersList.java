@@ -1,7 +1,9 @@
 package gofish.game.player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class PlayersList extends ArrayList<Player> {
@@ -11,6 +13,8 @@ public class PlayersList extends ArrayList<Player> {
     private int numComputerPlayers = 0;
     
     private Set<String> names = new HashSet<>();
+    
+    private Map<Integer, Player> players = new HashMap<>();
 
     public PlayersList(int initialCapacity) {
         super(initialCapacity);
@@ -20,6 +24,7 @@ public class PlayersList extends ArrayList<Player> {
     public boolean add(Player player) {
         super.add(player);
         names.add(player.getName());
+        players.put(player.getId(), player);
         if (player.isHuman()) {
             numHumanPlayers++;
         } else {
@@ -38,6 +43,10 @@ public class PlayersList extends ArrayList<Player> {
     
     public boolean containsName(String name) {
         return names.contains(name);
+    }
+
+    public Player getPlayerById(Integer playerId) {
+        return players.get(playerId);
     }
 
 }

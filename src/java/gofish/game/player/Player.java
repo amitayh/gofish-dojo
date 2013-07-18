@@ -80,7 +80,7 @@ abstract public class Player {
         Series series = getCompleteSeries();
         while (series != null) {
             Action action = new DropSeriesAction(this, series);
-            engine.performPlayerAction(action);
+//            engine.performPlayerAction(action);
             series = getCompleteSeries();
         }
     }

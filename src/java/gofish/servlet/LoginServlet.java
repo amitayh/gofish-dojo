@@ -3,7 +3,6 @@ package gofish.servlet;
 import gofish.game.Engine;
 import gofish.game.engine.AddPlayerException;
 import gofish.game.player.Human;
-import gofish.game.player.Player;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -22,9 +21,9 @@ public class LoginServlet extends AjaxServlet {
             result.message = "Already logged in";
         } else {
             try {
-                Player player = new Human(name);
+                Human player = new Human(name);
                 engine.addPlayer(player);
-                session.setAttribute("playerId", player.getId());
+                session.setAttribute("player", player);
                 result.success = true;
             } catch (AddPlayerException e) {
                 result.message = e.getMessage();

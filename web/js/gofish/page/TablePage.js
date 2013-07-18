@@ -33,6 +33,8 @@ define([
 
         players: {},
         
+        player: null,
+        
         currentPlayer: null,
 
         onLoad: function() {
@@ -70,7 +72,7 @@ define([
             // Playback events in sequence using deferred/promise API
             array.forEach(events, function(event) {
                 
-                console.log(event); // Debug
+                console.debug('Event', event); // Debug
                 
                 var method = self['play' + event.type];
                 if (method) {
@@ -98,12 +100,13 @@ define([
             domConstruct.place(player.domNode, this.playersList);
             this.logger.log('Player joined: ' + this.getPlayerName(player));
             if (player.getId() === this.playerId) {
-                player.enableControls();
+                this.player = player;
             }
         },
 
         playStartGameEvent: function() {
             this.logger.log('Game started');
+            this.player.initControls(this.players);
         },
         
         playChangeTurnEvent: function(event) {
@@ -125,7 +128,7 @@ define([
                 this.getCardName(event.cardName)
             );
             
-            return delayedPromise(2000);
+            return delayedPromise(500);
         },
         
         playCardMovedEvent: function(event) {
@@ -138,7 +141,7 @@ define([
                 this.getPlayerName(to)
             );
     
-            return delayedPromise(2000);
+            return delayedPromise(500);
         },
         
         playGoFishEvent: function(event) {
@@ -150,12 +153,12 @@ define([
                 this.getPlayerName(player2) + ' to go fish '
             );
     
-            return delayedPromise(2000);
+            return delayedPromise(500);
         },
 
         getPlayerName: function(player) {
             var name = entities.encode(player.getName());
-            return (player.getId() === this.playerId) ? '<strong>' + name + '</strong>' : name;
+            return (player === this.player) ? '<strong>' + name + '</strong>' : name;
         },
         
         getCardName: function(cardName) {

@@ -6,6 +6,7 @@ import gofish.game.config.Config;
 import gofish.game.config.ValidationException;
 import gofish.game.engine.AddPlayerException;
 import gofish.game.engine.GameStatusException;
+import gofish.game.engine.PlayerActionException;
 import gofish.game.engine.StartGameException;
 import gofish.game.event.AskCardEvent;
 import gofish.game.event.CardMovedEvent;
@@ -87,6 +88,10 @@ public class Engine extends Observable {
         return players;
     }
     
+    public Player getPlayer(Integer playerId) {
+        return players.getPlayerById(playerId);
+    }
+    
     public Set<Card> findCards(String property) {
         return availableCards.getByProperty(property);
     }
@@ -135,11 +140,11 @@ public class Engine extends Observable {
         nextTurn();
     }
     
-    public void performPlayerAction(Action action) {
-//        ensureStatus(Status.STARTED);
+    public void performPlayerAction(Action action) throws GameStatusException, PlayerActionException {
+        ensureStatus(Status.STARTED);
         
         if (action.getPlayer() != getCurrentPlayer()) {
-            throw new IllegalStateException("Only current player can perform actions");
+            throw new PlayerActionException("Only current player can perform actions");
         }
         
         if (action instanceof AskCardAction) {
@@ -147,9 +152,9 @@ public class Engine extends Observable {
         }
     }
     
-    private void playTurn(AskCardAction action) {
+    private void playTurn(AskCardAction action) throws PlayerActionException {
         if (!validateCardRequest(action)) {
-            // TODO
+            throw new PlayerActionException("Invalid card request");
         }
         
         boolean anotherTurn = false;

@@ -1,4 +1,4 @@
-define(['dojo/request'], function(request) {
+define(['dojo/_base/lang', 'dojo/request'], function(lang, request) {
     
     return {
         
@@ -24,6 +24,29 @@ define(['dojo/request'], function(request) {
                 data: {name: name},
                 method: 'post',
                 handleAs: 'json'
+            });
+        },
+        
+        getAvailableCards: function() {
+            return request('getAvailableCards', {handleAs: 'json'});
+        },
+        
+        performPlayerAction: function(action, args) {
+            var data = {action: action};
+            if (args !== undefined) {
+                lang.mixin(data, args);
+            }
+            return request('performPlayerAction', {
+                data: data,
+                method: 'post',
+                handleAs: 'json'
+            });
+        },
+        
+        askCard: function(askFrom, cardName) {
+            return this.performPlayerAction('askCard', {
+                askFrom: askFrom,
+                cardName: cardName
             });
         }
         
