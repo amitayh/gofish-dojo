@@ -2,6 +2,7 @@ package gofish.game;
 
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
+import gofish.game.card.Series;
 import gofish.game.config.Config;
 import gofish.game.config.ValidationException;
 import gofish.game.engine.AddPlayerException;
@@ -15,12 +16,15 @@ import gofish.game.event.Event;
 import gofish.game.event.GoFishEvent;
 import gofish.game.event.PlayerJoinEvent;
 import gofish.game.event.PlayerOutEvent;
+import gofish.game.event.SeriesDroppedEvent;
 import gofish.game.event.StartGameEvent;
 import gofish.game.player.ComputerPlayerObserver;
 import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
 import gofish.game.player.action.Action;
 import gofish.game.player.action.AskCardAction;
+import gofish.game.player.action.DropSeriesAction;
+import gofish.game.player.action.SkipTurnAction;
 import java.util.Observable;
 import java.util.Set;
 
@@ -134,8 +138,8 @@ public class Engine extends Observable {
                 MIN_NUM_CARDS + ", actual: " + numCards + ")");
         }
         
+        dispatchEvent(new StartGameEvent(players));
         status = Status.STARTED;
-        dispatchEvent(new StartGameEvent());
         
         nextTurn();
     }
@@ -148,29 +152,38 @@ public class Engine extends Observable {
         }
         
         if (action instanceof AskCardAction) {
-            playTurn((AskCardAction) action);
+            askCard((AskCardAction) action);
+        } else if (action instanceof DropSeriesAction) {
+            dropSeries((DropSeriesAction) action);
+        } else if (action instanceof SkipTurnAction) {
+            nextTurn();
         }
     }
     
-    private void playTurn(AskCardAction action) throws PlayerActionException {
-        if (!validateCardRequest(action)) {
-            throw new PlayerActionException("Invalid card request");
-        }
-        
-        boolean anotherTurn = false;
-
-        // Check if player being asked has the requested card
+    private void askCard(AskCardAction action) throws PlayerActionException {
         Player player = action.getPlayer();
         Player askFrom = action.getAskFrom();
         String cardName = action.getCardName();
-        Card card = askFrom.getHand().getCard(cardName);
+        boolean anotherTurn = false;
+        
+        // Validate action
+        if (config.getForceShowOfSeries() && player.hasCompleteSeries()) {
+            throw new PlayerActionException("Must drop complete series before asking for cards");
+        }
+        if (!validateCardRequest(player, cardName)) {
+            throw new PlayerActionException("Invalid card request");
+        }
+        
         dispatchEvent(new AskCardEvent(player, askFrom, cardName));
+        
+        // Check if player being asked has the requested card
+        Card card = askFrom.getHand().getCard(cardName);
         if (card == null) {
             // GoFish!
             dispatchEvent(new GoFishEvent(askFrom, player));
         } else {
             // Give away card
-            moveCard(player, askFrom, card);
+            moveCard(askFrom, player, card);
             if (player.isPlaying() && players.size() > 1) {
                 anotherTurn = config.getAllowMutipleRequests();
             }
@@ -183,14 +196,14 @@ public class Engine extends Observable {
         }
     }
     
-    private boolean validateCardRequest(AskCardAction action) {
+    private boolean validateCardRequest(Player player, String cardName) {
         boolean result = false;
         
         // Check if requested card is in the game
-        Card card = availableCards.getCard(action.getCardName());
+        Card card = availableCards.getCard(cardName);
         if (card != null) {
             // Check that the player is allowed to ask for this card
-            CardsCollection hand = action.getPlayer().getHand();
+            CardsCollection hand = player.getHand();
             for (String property : card.getProperties()) {
                 if (hand.hasSeries(property)) {
                     result = true;
@@ -203,10 +216,10 @@ public class Engine extends Observable {
     }
     
     private void moveCard(Player from, Player to, Card card) {
-//        from.removeCard(card);
-//        to.addCard(card);
+        from.removeCard(card);
+        to.addCard(card);
         dispatchEvent(new CardMovedEvent(from, to, card));
-//        checkPlayer(from);
+        checkPlayer(from);
     }
     
     private void checkPlayer(Player player) {
@@ -229,6 +242,20 @@ public class Engine extends Observable {
         } while (!currentPlayer.isPlaying());
         
         dispatchEvent(new ChangeTurnEvent(currentPlayer));
+    }
+    
+    private void dropSeries(DropSeriesAction action) throws PlayerActionException {
+        Player player = action.getPlayer();
+        Series series = action.getSeries();
+        Set<Card> cards = series.getCards();
+        
+        if (!player.getHand().containsAll(cards)) {
+            throw new PlayerActionException("Player doesn't have all cards in series");
+        }
+        
+        availableCards.removeAll(cards);
+        player.dropCompleteSeries(series);
+        dispatchEvent(new SeriesDroppedEvent(player, series));
     }
     
     private int nextPlayerIndex() {

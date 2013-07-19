@@ -3,10 +3,12 @@ package gofish.game.player;
 import gofish.game.Engine;
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
+import gofish.game.card.Series;
 import gofish.game.engine.GameStatusException;
 import gofish.game.engine.PlayerActionException;
 import gofish.game.player.action.Action;
 import gofish.game.player.action.AskCardAction;
+import gofish.game.player.action.DropSeriesAction;
 import gofish.game.player.action.QuitGameAction;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +27,9 @@ public class Computer extends Player {
     public void play(Engine engine) {
         Action action;        
         try {
+            dropAllCompleteSeries(engine);
+            // TODO: check if still playing after dropping series
+            
             Player askFrom = playerToAsk(engine);
             String cardName = cardNameToAsk(engine);
             action = new AskCardAction(this, askFrom, cardName);
@@ -36,6 +41,15 @@ public class Computer extends Player {
             engine.performPlayerAction(action);
         } catch (GameStatusException | PlayerActionException e) {
             throw new RuntimeException(e);
+        }
+    }
+    
+    public void dropAllCompleteSeries(Engine engine) throws GameStatusException, PlayerActionException {
+        Series series = getCompleteSeries();
+        while (series != null) {
+            Action action = new DropSeriesAction(this, series);
+            engine.performPlayerAction(action);
+            series = getCompleteSeries();
         }
     }
 

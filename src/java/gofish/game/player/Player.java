@@ -4,9 +4,8 @@ import gofish.game.Engine;
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
 import gofish.game.card.Series;
-import gofish.game.player.action.Action;
-import gofish.game.player.action.DropSeriesAction;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -76,30 +75,23 @@ abstract public class Player {
         hand.remove(card);
     }
     
-    public void dropCompleteSeries(Engine engine) {
-        Series series = getCompleteSeries();
-        while (series != null) {
-            Action action = new DropSeriesAction(this, series);
-//            engine.performPlayerAction(action);
-            series = getCompleteSeries();
-        }
-    }
-    
-    /**
-     * Check if there's a complete series in hand
-     * 
-     * @return the completed series if it exists, null otherwise
-     */
-    private Series getCompleteSeries() {
+    public Series getCompleteSeries() {
         for (String property : hand.properties()) {
             if (hand.seriesSize(property) == Engine.COMPLETE_SERIES_SIZE) {
-                Set<Card> cards = hand.removeByProperty(property);
-                Series series = new Series(property, cards);
-                completeSeries.add(series);
-                return series;
+                Set<Card> cards = hand.getByProperty(property);
+                return new Series(property, new HashSet<>(cards));
             }
         }
         return null;
+    }
+    
+    public boolean hasCompleteSeries() {
+        return (getCompleteSeries() != null);
+    }
+    
+    public void dropCompleteSeries(Series series) {
+        hand.removeAll(series.getCards());
+        completeSeries.add(series);
     }
 
 }

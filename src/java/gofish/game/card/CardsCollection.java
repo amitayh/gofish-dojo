@@ -153,6 +153,11 @@ public class CardsCollection extends AbstractCollection<Card> {
         series.clear();
     }
     
+    @Override
+    public Card[] toArray() {
+        return toArray(new Card[size()]);
+    }
+    
     public class CardsIterator implements Iterator<Card> {
         
         final private Iterator<Card> iterator;

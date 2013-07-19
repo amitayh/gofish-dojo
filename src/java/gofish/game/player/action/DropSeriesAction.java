@@ -11,5 +11,9 @@ public class DropSeriesAction extends Action {
         super(player);
         this.series = sereis;
     }
+    
+    public Series getSeries() {
+        return series;
+    }
 
 }

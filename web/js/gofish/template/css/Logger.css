@@ -1,6 +1,7 @@
 .logger {
     height: 250px;
     overflow: auto;
+    white-space: nowrap;
     border: 1px solid #ddd;
     background: #fff;
     border-radius: 4px;

@@ -93,8 +93,7 @@ define([
         playPlayerJoinEvent: function(event) {
             var player = new Player({
                 playerId: event.player.id,
-                playerName: event.player.name,
-                hand: event.player.hand
+                playerName: event.player.name
             });
             this.players[player.getId()] = player;
             domConstruct.place(player.domNode, this.playersList);
@@ -104,7 +103,15 @@ define([
             }
         },
 
-        playStartGameEvent: function() {
+        playStartGameEvent: function(event) {
+            var playersCards = event.playersCards;
+            for (var playerId in playersCards) {
+                if (playersCards.hasOwnProperty(playerId)) {
+                    var player = this.players[playerId];
+                    player.setHand(playersCards[playerId]);
+                }
+            }
+            
             this.logger.log('Game started');
             this.player.initControls(this.players);
         },
@@ -116,6 +123,11 @@ define([
             var currentPlayer = this.currentPlayer = this.players[event.currentPlayer.id];
             this.logger.log(this.getPlayerName(currentPlayer) + ' is playing');
             currentPlayer.setCurrentPlayer(true);
+            
+            this.player.hand.disableSelection();
+            if (currentPlayer === this.player) {
+                this.player.hand.enableSelection();
+            }
         },
         
         playAskCardEvent: function(event) {
@@ -135,10 +147,28 @@ define([
             var from = this.players[event.from.id],
                 to = this.players[event.to.id];
             
+            var card = from.removeCard(event.card.id);
+            card[to === this.player ? 'reveal' : 'conceal']();
+            to.addCard(card);
+            
             this.logger.log(
                 this.getPlayerName(from) + ' gave ' +
                 this.getCardName(event.card.name) + ' to ' +
                 this.getPlayerName(to)
+            );
+    
+            return delayedPromise(500);
+        },
+        
+        playSeriesDroppedEvent: function(event) {
+            var player = this.players[event.player.id],
+                series = event.series;
+            
+            player.dropSeries(series);
+            
+            this.logger.log(
+                this.getPlayerName(player) + ' dropped a series of ' +
+                this.getSeriesName(series)
             );
     
             return delayedPromise(500);
@@ -162,7 +192,11 @@ define([
         },
         
         getCardName: function(cardName) {
-            return '<em>' + entities.encode(cardName) + '</em>'
+            return '<em>' + entities.encode(cardName) + '</em>';
+        },
+        
+        getSeriesName: function(series) {
+            return '<em>' + entities.encode(series.property) + "</em>'s";
         }
         
     });
