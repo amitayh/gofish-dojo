@@ -13,10 +13,13 @@ import gofish.game.event.AskCardEvent;
 import gofish.game.event.CardMovedEvent;
 import gofish.game.event.ChangeTurnEvent;
 import gofish.game.event.Event;
+import gofish.game.event.GameOverEvent;
 import gofish.game.event.GoFishEvent;
 import gofish.game.event.PlayerJoinEvent;
 import gofish.game.event.PlayerOutEvent;
+import gofish.game.event.QuitGameEvent;
 import gofish.game.event.SeriesDroppedEvent;
+import gofish.game.event.SkipTurnEvent;
 import gofish.game.event.StartGameEvent;
 import gofish.game.player.ComputerPlayerObserver;
 import gofish.game.player.Player;
@@ -24,7 +27,10 @@ import gofish.game.player.PlayersList;
 import gofish.game.player.action.Action;
 import gofish.game.player.action.AskCardAction;
 import gofish.game.player.action.DropSeriesAction;
+import gofish.game.player.action.QuitGameAction;
 import gofish.game.player.action.SkipTurnAction;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Observable;
 import java.util.Set;
 
@@ -147,7 +153,8 @@ public class Engine extends Observable {
     public void performPlayerAction(Action action) throws GameStatusException, PlayerActionException {
         ensureStatus(Status.STARTED);
         
-        if (action.getPlayer() != getCurrentPlayer()) {
+        Player player = action.getPlayer();
+        if (player != getCurrentPlayer()) {
             throw new PlayerActionException("Only current player can perform actions");
         }
         
@@ -156,6 +163,9 @@ public class Engine extends Observable {
         } else if (action instanceof DropSeriesAction) {
             dropSeries((DropSeriesAction) action);
         } else if (action instanceof SkipTurnAction) {
+            skipTurn(player);
+        } else if (action instanceof QuitGameAction) {
+            quitGame(player);
             nextTurn();
         }
     }
@@ -233,29 +243,74 @@ public class Engine extends Observable {
     }
     
     private void nextTurn() {
-        Player currentPlayer;
-        do {
-            // TODO: check endless loop
-            // Cycle players who are still playing
-            currentPlayerIndex = nextPlayerIndex();
-            currentPlayer = getCurrentPlayer();
-        } while (!currentPlayer.isPlaying());
-        
-        dispatchEvent(new ChangeTurnEvent(currentPlayer));
+        if (countActivePlayers() > 1) {
+            Player currentPlayer;
+            do {
+                // Cycle players who are still playing
+                currentPlayerIndex = nextPlayerIndex();
+                currentPlayer = getCurrentPlayer();
+            } while (!currentPlayer.isPlaying());
+            dispatchEvent(new ChangeTurnEvent(currentPlayer));
+        } else {
+            endGame();
+        }
+    }
+    
+    private void endGame() {
+        Player winner = getWinner();
+        for (Player player : players) {
+            if (player.isPlaying()) {
+                quitGame(player);
+            }
+        }
+        dispatchEvent(new GameOverEvent(winner));
+        status = Status.ENDED;
+    }
+    
+    private Player getWinner() {
+        return Collections.max(players, new Comparator<Player>() {
+            @Override
+            public int compare(Player p1, Player p2) {
+                // Compare players by number of completed series
+                return p1.getAllCompleteSeries().size() - p2.getAllCompleteSeries().size();
+            }
+        });
+    }
+    
+    private int countActivePlayers() {
+        int activePlayers = 0;
+        for (Player player : players) {
+            if (player.isPlaying()) {
+                activePlayers++;
+            }
+        }
+        return activePlayers;
     }
     
     private void dropSeries(DropSeriesAction action) throws PlayerActionException {
         Player player = action.getPlayer();
         Series series = action.getSeries();
-        Set<Card> cards = series.getCards();
+        CardsCollection hand = player.getHand();
+        Set<Card> cards = hand.getByProperty(series.getProperty());
         
-        if (!player.getHand().containsAll(cards)) {
+        if (!cards.equals(series.getCards())) {
             throw new PlayerActionException("Player doesn't have all cards in series");
         }
         
         availableCards.removeAll(cards);
         player.dropCompleteSeries(series);
         dispatchEvent(new SeriesDroppedEvent(player, series));
+    }
+    
+    private void skipTurn(Player player) {
+        dispatchEvent(new SkipTurnEvent(player));
+        nextTurn();
+    }
+    
+    private void quitGame(Player player) {
+        availableCards.removeAll(player.getHand());
+        player.quitGame();
+        dispatchEvent(new QuitGameEvent(player));
     }
     
     private int nextPlayerIndex() {

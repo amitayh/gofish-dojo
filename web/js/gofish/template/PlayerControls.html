@@ -2,12 +2,16 @@
     <p>
         Ask <select data-dojo-attach-point="playerSelector" class="input-medium"></select>
         for card <select data-dojo-attach-point="cardSelector" class="input-medium"></select>
-        <button class="btn" data-dojo-attach-event="click: askCardClick">Ask card</button>
+        <button data-dojo-attach-point="askCardButton"
+                data-dojo-attach-event="click: askCardClick"
+                class="btn">Ask card</button>
     </p>
     <p>
-        <button class="btn">Drop series</button>
+        <button data-dojo-attach-point="dropSeriesButton"
+                data-dojo-attach-event="click: dropSeriesClick"
+                class="btn" disabled>Drop series</button>
         |
-        <button class="btn">Skip turn</button>
-        <button class="btn">Quit game</button>
+        <button data-dojo-attach-event="click: skipTurnClick" class="btn">Skip turn</button>
+        <button data-dojo-attach-event="click: quitGameClick" class="btn btn-danger">Quit game</button>
     </p>
 </div>

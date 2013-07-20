@@ -185,6 +185,25 @@ define([
     
             return delayedPromise(500);
         },
+        
+        playSkipTurnEvent: function(event) {
+            var player = this.players[event.player.id];
+            this.logger.log(this.getPlayerName(player) + ' skips his turn');
+        },
+        
+        playQuitGameEvent: function(event) {
+            var player = this.players[event.player.id];
+            player.quitGame();
+            this.logger.log(this.getPlayerName(player) + ' is out of the game!');
+        },
+        
+        playGameOverEvent: function(event) {
+            var winner = this.players[event.winner.id];
+            this.logger.log(
+                'Game over! Winner is ' + this.getPlayerName(winner) +
+                ' with ' + event.winnerCompleteSeries + ' complete series'
+            );
+        },
 
         getPlayerName: function(player) {
             var name = entities.encode(player.getName());

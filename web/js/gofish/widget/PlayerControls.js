@@ -57,7 +57,27 @@ define([
             });
         },
         
-        onAskCard: function(e) {}
+        dropSeriesClick: function() {
+            this.emit('DropSeriesClick', {});
+        },
+        
+        skipTurnClick: function() {
+            this.emit('SkipTurnClick', {});
+        },
+        
+        quitGameClick: function() {
+            if (confirm('Are you sure you want to quit the game?')) {
+                this.emit('QuitGameClick', {});
+            }
+        },
+        
+        onAskCard: function(e) {},
+        
+        onDropSeriesClick: function(e) {},
+        
+        onSkipTurnClick: function(e) {},
+        
+        onQuitGameClick: function(e) {}
         
     });
     

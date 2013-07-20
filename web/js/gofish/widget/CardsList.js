@@ -6,14 +6,14 @@ define([
     'dijit/registry',
     'dijit/_WidgetBase'
 ], function(declare, on, domConstruct, domClass, registry, _WidgetBase) {
-    
-    var MaxSelectedCards = 4;
 
     return declare(_WidgetBase, {
         
         length: 0,
         
         selected: 0,
+        
+        maxSelected: 0,
         
         selectionEnabled: false,
 
@@ -61,7 +61,9 @@ define([
             }
         },
         
-        initSelection: function() {
+        initSelection: function(maxSelected) {
+            this.maxSelected = maxSelected;
+            
             var self = this;
             on(this.domNode, '.card:click', function() {
                 if (self.selectionEnabled) {
@@ -87,10 +89,11 @@ define([
         },
         
         select: function(card) {
-            if (!this.isSelected(card) && this.selected < MaxSelectedCards) {
+            if (!this.isSelected(card) && this.selected < this.maxSelected) {
                 domClass.add(card.domNode, 'card-selected');
                 this.selectedCards[card.getId()] = card;
                 this.selected++;
+                this.emit('Select', {card: card});
             }
         },
         
@@ -99,8 +102,13 @@ define([
                 domClass.remove(card.domNode, 'card-selected');
                 delete this.selectedCards[card.getId()];
                 this.selected--;
+                this.emit('Deselect', {card: card});
             }
-        }
+        },
+        
+        onSelect: function(e) {},
+        
+        onDeselect: function(e) {}
 
     });
 

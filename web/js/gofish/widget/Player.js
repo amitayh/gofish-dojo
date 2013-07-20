@@ -15,6 +15,8 @@ define([
 ], function(declare, lang, domConstruct, domClass, _WidgetBase, _TemplatedMixin,
             _WidgetsInTemplateMixin, entities, dataService, PlayerControls, Card,
             CardsList, template) {
+    
+    var MaxSelectedCards = 4;
 
     return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
 
@@ -87,7 +89,19 @@ define([
         initControls: function(players) {
             this.controls = new PlayerControls(null, this.controlsContainer);
             this.controls.on('askCard', lang.hitch(this, 'askCard'));
+            this.controls.on('dropSeriesClick', lang.hitch(this, 'dropSeriesClick'));
+            this.controls.on('skipTurnClick', lang.hitch(this, 'skipTurnClick'));
+            this.controls.on('quitGameClick', lang.hitch(this, 'quitGameClick'));
+            this.addPlayers(players);
             
+            this.hand.initSelection(MaxSelectedCards);
+            var checkDropSeriesButton = lang.hitch(this, 'checkDropSeriesButton');
+            this.hand.on('select', checkDropSeriesButton);
+            this.hand.on('deselect', checkDropSeriesButton);
+            this.hand.revealCards();
+        },
+        
+        addPlayers: function(players) {
             for (var playerId in players) {
                 if (players.hasOwnProperty(playerId)) {
                     var player = players[playerId];
@@ -96,9 +110,11 @@ define([
                     }
                 }
             }
-            
-            this.hand.revealCards();
-            this.hand.initSelection();
+        },
+        
+        checkDropSeriesButton: function() {
+            var disabled = this.hand.selected < MaxSelectedCards;
+            this.controls.dropSeriesButton.disabled = disabled;
         },
 
         setCurrentPlayer: function(flag) {
@@ -108,8 +124,46 @@ define([
             }
         },
         
+        setError: function(message) {
+            alert(message); // TODO
+        },
+        
+        clearError: function() {
+            // TODO
+        },
+        
+        quitGame: function() {
+            this.playing = false;
+            domClass.add(this.domNode, 'muted');
+        },
+        
         askCard: function(event) {
-            dataService.askCard(event.playerId, event.cardName);
+            var self = this;
+            dataService.askCard(event.playerId, event.cardName).then(function(response) {
+                self.clearError();
+                if (!response.success) {
+                    self.setError(response.message);
+                }
+            });
+        },
+        
+        dropSeriesClick: function() {
+            var self = this;
+            dataService.dropSeries(this.hand.selectedCards).then(function(response) {
+                self.hand.clearSelection();
+                self.clearError();
+                if (!response.success) {
+                    self.setError(response.message);
+                }
+            });
+        },
+        
+        skipTurnClick: function() {
+            dataService.skipTurn();
+        },
+        
+        quitGameClick: function() {
+            dataService.quitGame();
         }
 
     });

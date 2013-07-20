@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +58,17 @@ public class CardsCollection extends AbstractCollection<Card> {
 
     public boolean hasSeries(String property) {
         return series.containsKey(property);
+    }
+    
+    public Set<Card> getAllCards(String... cardNames) {
+        Set<Card> result = new HashSet<>(cardNames.length);
+        for (String cardName : cardNames) {
+            Card card = cards.get(cardName);
+            if (card != null) {
+                result.add(card);
+            }
+        }
+        return result;
     }
     
     public Card getCard(String cardName) {

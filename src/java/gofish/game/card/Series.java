@@ -1,5 +1,6 @@
 package gofish.game.card;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Series {
@@ -10,7 +11,7 @@ public class Series {
 
     public Series(String property, Set<Card> cards) {
         this.property = property;
-        this.cards = cards;
+        this.cards = new HashSet<>(cards);
     }
 
     public String getProperty() {

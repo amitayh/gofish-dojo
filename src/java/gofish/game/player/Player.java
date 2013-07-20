@@ -5,7 +5,6 @@ import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
 import gofish.game.card.Series;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -46,6 +45,11 @@ abstract public class Player {
         return name;
     }
     
+    public void quitGame() {
+        playing = false;
+        hand.clear();
+    }
+    
     public boolean isPlaying() {
         return playing;
     }
@@ -79,10 +83,14 @@ abstract public class Player {
         for (String property : hand.properties()) {
             if (hand.seriesSize(property) == Engine.COMPLETE_SERIES_SIZE) {
                 Set<Card> cards = hand.getByProperty(property);
-                return new Series(property, new HashSet<>(cards));
+                return new Series(property, cards);
             }
         }
         return null;
+    }
+    
+    public Collection<Series> getAllCompleteSeries() {
+        return completeSeries;
     }
     
     public boolean hasCompleteSeries() {

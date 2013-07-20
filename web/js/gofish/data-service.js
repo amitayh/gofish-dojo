@@ -48,6 +48,26 @@ define(['dojo/_base/lang', 'dojo/request'], function(lang, request) {
                 askFrom: askFrom,
                 cardName: cardName
             });
+        },
+        
+        dropSeries: function(cards) {
+            var cardNames = [];
+            for (var id in cards) {
+                if (cards.hasOwnProperty(id)) {
+                    cardNames.push(cards[id].getName());
+                }
+            }
+            return this.performPlayerAction('dropSeries', {
+                cards: cardNames.join(',')
+            });
+        },
+        
+        skipTurn: function() {
+            return this.performPlayerAction('skipTurn');
+        },
+        
+        quitGame: function() {
+            return this.performPlayerAction('quitGame');
         }
         
     };

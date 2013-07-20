@@ -1,3 +1,16 @@
 .player.current {
     background-color: lightyellow;
 }
+
+.player.muted .name {
+    text-decoration: line-through;
+}
+
+.complete-series {
+    margin: 10px 0;
+}
+
+.complete-series .cards-list {
+    float: left;
+    margin-right: 10px;
+}
