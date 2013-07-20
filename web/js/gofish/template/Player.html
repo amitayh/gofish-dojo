@@ -1,15 +1,15 @@
-<li class="player">
-    <h3 data-dojo-attach-point="nameNode"></h3>
-    <p class="info">
-        <strong>Cards</strong>: <span data-dojo-attach-point="numberOfCards">0</span><br>
-        <strong>Series</strong>: <span data-dojo-attach-point="numberOfSeries">0</span>
-    </p>
-    <p data-dojo-attach-point="controls" class="controls hide">
-        <button>Drop series</button>
-        |
-        <button>Skip turn</button>
-        <button>Quit game</button>
-    </p>
-    <div data-dojo-type="gofish/widget/CardsList" data-dojo-attach-point="handWidget"></div>
-    <div data-dojo-attach-point="completeSeries" class="complete-series"></div>
-</li>
+<div class="player">
+    <h2>
+        <img src="js/gofish/template/img/player.png" width="48" height="48" alt="player" class="img-polaroid">
+        <span data-dojo-attach-point="nameNode" class="name"></span>
+    </h2>
+    
+    <h5>Cards (<span data-dojo-attach-point="numCardsNode">0</span>)</h5>
+    <div data-dojo-type="gofish/widget/CardsList" data-dojo-attach-point="hand"></div>
+    
+    <h5>Series (<span data-dojo-attach-point="numCompleteSeriesNode">0</span>)</h5>
+    <div data-dojo-attach-point="completeSeries" class="complete-series clearfix"></div>
+    
+    <div data-dojo-attach-point="controlsContainer" class="hide"></div>
+    <div data-dojo-type="gofish/widget/Balloon" data-dojo-attach-point="balloon"></div>
+</div>

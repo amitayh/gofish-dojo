@@ -4,8 +4,6 @@ import gofish.game.Engine;
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
 import gofish.game.card.Series;
-import gofish.game.player.action.Action;
-import gofish.game.player.action.DropSeriesAction;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -47,6 +45,11 @@ abstract public class Player {
         return name;
     }
     
+    public void quitGame() {
+        playing = false;
+        hand.clear();
+    }
+    
     public boolean isPlaying() {
         return playing;
     }
@@ -76,30 +79,27 @@ abstract public class Player {
         hand.remove(card);
     }
     
-    public void dropCompleteSeries(Engine engine) {
-        Series series = getCompleteSeries();
-        while (series != null) {
-            Action action = new DropSeriesAction(this, series);
-            engine.performPlayerAction(action);
-            series = getCompleteSeries();
-        }
-    }
-    
-    /**
-     * Check if there's a complete series in hand
-     * 
-     * @return the completed series if it exists, null otherwise
-     */
-    private Series getCompleteSeries() {
+    public Series getCompleteSeries() {
         for (String property : hand.properties()) {
             if (hand.seriesSize(property) == Engine.COMPLETE_SERIES_SIZE) {
-                Set<Card> cards = hand.removeByProperty(property);
-                Series series = new Series(property, cards);
-                completeSeries.add(series);
-                return series;
+                Set<Card> cards = hand.getByProperty(property);
+                return new Series(property, cards);
             }
         }
         return null;
+    }
+    
+    public Collection<Series> getAllCompleteSeries() {
+        return completeSeries;
+    }
+    
+    public boolean hasCompleteSeries() {
+        return (getCompleteSeries() != null);
+    }
+    
+    public void dropCompleteSeries(Series series) {
+        hand.removeAll(series.getCards());
+        completeSeries.add(series);
     }
 
 }

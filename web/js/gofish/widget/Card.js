@@ -2,16 +2,16 @@ define([
     'dojo/_base/declare',
     'dojo/dom-construct',
     'dojo/dom-class',
-    'dijit/_WidgetBase',
+    'dijit/_WidgetBase'
 ], function(declare, domConstruct, domClass, _WidgetBase) {
+    
+    var ConcealedClassName = 'card-back';
 
     return declare(_WidgetBase, {
 
         buildRendering: function() {
-            this.domNode = domConstruct.create('li', {
-                className: 'card',
-                innerHTML: 'Card'
-            });
+            this.revealedClassName = 'card-' + this.cardName.replace(/ /g, '_').toLowerCase();
+            this.domNode = domConstruct.create('li', {className: 'card'});
         },
         
         getId: function() {
@@ -23,9 +23,15 @@ define([
         },
         
         reveal: function() {
-            var className = this.cardName.replace(/ /g, '_').toLowerCase();
             this.domNode.innerHTML = this.cardName;
-            domClass.add(this.domNode, className);
+            domClass.add(this.domNode, this.revealedClassName);
+            domClass.remove(this.domNode, ConcealedClassName);
+        },
+        
+        conceal: function() {
+            this.domNode.innerHTML = '';
+            domClass.remove(this.domNode, this.revealedClassName);
+            domClass.add(this.domNode, ConcealedClassName);
         }
 
     });

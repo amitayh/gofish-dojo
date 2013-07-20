@@ -13,6 +13,7 @@ public class PlayerSerializer implements JsonSerializer<Player> {
     public JsonElement serialize(Player player, Type type, JsonSerializationContext jsc) {
         JsonObject element = new JsonObject();
         element.add("id", jsc.serialize(player.getId()));
+        element.add("name", jsc.serialize(player.getName()));
         return element;
     }
 

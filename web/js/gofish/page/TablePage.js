@@ -19,12 +19,6 @@ define([
 
     var UpdateInterval = 1500;
     
-    function delayedPromise(delay) {
-        var deferred = new Deferred();
-        setTimeout(deferred.resolve, delay);
-        return deferred.promise;
-    }
-    
     return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
         
         templateString: template,
@@ -32,6 +26,8 @@ define([
         updateTimer: null,
 
         players: {},
+        
+        player: null,
         
         currentPlayer: null,
 
@@ -69,9 +65,6 @@ define([
 
             // Playback events in sequence using deferred/promise API
             array.forEach(events, function(event) {
-                
-                console.log(event); // Debug
-                
                 var method = self['play' + event.type];
                 if (method) {
                     // Add method to promise chain
@@ -91,19 +84,27 @@ define([
         playPlayerJoinEvent: function(event) {
             var player = new Player({
                 playerId: event.player.id,
-                playerName: event.player.name,
-                hand: event.player.hand
+                playerName: event.player.name
             });
             this.players[player.getId()] = player;
             domConstruct.place(player.domNode, this.playersList);
             this.logger.log('Player joined: ' + this.getPlayerName(player));
             if (player.getId() === this.playerId) {
-                player.enableControls();
+                this.player = player;
             }
         },
 
-        playStartGameEvent: function() {
+        playStartGameEvent: function(event) {
+            var playersCards = event.playersCards;
+            for (var playerId in playersCards) {
+                if (playersCards.hasOwnProperty(playerId)) {
+                    var player = this.players[playerId];
+                    player.setHand(playersCards[playerId]);
+                }
+            }
+            
             this.logger.log('Game started');
+            this.player.initControls(this.players);
         },
         
         playChangeTurnEvent: function(event) {
@@ -113,53 +114,102 @@ define([
             var currentPlayer = this.currentPlayer = this.players[event.currentPlayer.id];
             this.logger.log(this.getPlayerName(currentPlayer) + ' is playing');
             currentPlayer.setCurrentPlayer(true);
+            
+            this.player.hand.disableSelection();
+            if (currentPlayer === this.player) {
+                this.player.hand.enableSelection();
+            }
         },
         
         playAskCardEvent: function(event) {
             var player = this.players[event.player.id],
-                askFrom = this.players[event.askFrom.id];
+                playerName = this.getPlayerName(player),
+                askFrom = this.players[event.askFrom.id],
+                askFromName = this.getPlayerName(askFrom),
+                cardName = this.getCardName(event.cardName);
             
-            this.logger.log(
-                this.getPlayerName(player) + ' asked ' +
-                this.getPlayerName(askFrom) + ' for card ' +
-                this.getCardName(event.cardName)
-            );
+            this.logger.log(playerName + ' asked ' + askFromName + ' for card ' + cardName);
             
-            return delayedPromise(2000);
+            return player.say(askFromName + ', do you have ' + cardName + '?');
         },
         
         playCardMovedEvent: function(event) {
             var from = this.players[event.from.id],
-                to = this.players[event.to.id];
+                fromName = this.getPlayerName(from),
+                to = this.players[event.to.id],
+                toName = this.getPlayerName(to),
+                cardName = this.getCardName(event.card.name),
+                self = this;
+            
+            this.logger.log(fromName + ' gave ' + cardName + ' to ' + toName);
+    
+            return from.say('Yes I do, here you go').then(function() {
+                return self.animateCardMove(from, to, event.card.id);
+            });
+        },
+        
+        animateCardMove: function(from, to, cardId) {
+            var initialPosition = from.hand.getCardPosition(cardId),
+                card = from.removeCard(cardId);
+            
+            card[to === this.player ? 'reveal' : 'conceal']();
+            
+            return to.animateAddCard(card, initialPosition);
+        },
+        
+        playSeriesDroppedEvent: function(event) {
+            var player = this.players[event.player.id],
+                series = event.series;
+            
+            player.dropSeries(series);
             
             this.logger.log(
-                this.getPlayerName(from) + ' gave ' +
-                this.getCardName(event.card.name) + ' to ' +
-                this.getPlayerName(to)
+                this.getPlayerName(player) + ' dropped a series of ' +
+                this.getSeriesName(series)
             );
-    
-            return delayedPromise(2000);
         },
         
         playGoFishEvent: function(event) {
             var player1 = this.players[event.player1.id],
-                player2 = this.players[event.player2.id];
+                player1Name = this.getPlayerName(player1),
+                player2 = this.players[event.player2.id],
+                player2Name = this.getPlayerName(player2);
             
-            this.logger.log(
-                this.getPlayerName(player1) + ' tells ' +
-                this.getPlayerName(player2) + ' to go fish '
-            );
+            this.logger.log(player1Name + ' tells ' + player2Name + ' to go fish');
     
-            return delayedPromise(2000);
+            return player1.say('Go fish!');
+        },
+        
+        playSkipTurnEvent: function(event) {
+            var player = this.players[event.player.id];
+            this.logger.log(this.getPlayerName(player) + ' skips his turn');
+        },
+        
+        playQuitGameEvent: function(event) {
+            var player = this.players[event.player.id];
+            player.quitGame();
+            this.logger.log(this.getPlayerName(player) + ' is out of the game!');
+        },
+        
+        playGameOverEvent: function(event) {
+            var winner = this.players[event.winner.id];
+            this.logger.log(
+                'Game over! Winner is ' + this.getPlayerName(winner) +
+                ' with ' + event.winnerCompleteSeries + ' complete series'
+            );
         },
 
         getPlayerName: function(player) {
             var name = entities.encode(player.getName());
-            return (player.getId() === this.playerId) ? '<strong>' + name + '</strong>' : name;
+            return (player === this.player) ? '<strong>' + name + '</strong>' : name;
         },
         
         getCardName: function(cardName) {
-            return '<em>' + entities.encode(cardName) + '</em>'
+            return '<em>' + entities.encode(cardName) + '</em>';
+        },
+        
+        getSeriesName: function(series) {
+            return '<em>' + entities.encode(series.property) + "</em>'s";
         }
         
     });

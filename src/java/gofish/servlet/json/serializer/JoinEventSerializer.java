@@ -14,7 +14,6 @@ public class JoinEventSerializer implements JsonSerializer<PlayerJoinEvent> {
         JsonObject player = new JsonObject();
         player.add("id", jsc.serialize(event.player.getId()));
         player.add("name", jsc.serialize(event.player.getName()));
-        player.add("hand", jsc.serialize(event.player.getHand()));
         
         JsonObject element = new JsonObject();
         element.add("type", jsc.serialize(event.type));

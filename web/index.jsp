@@ -8,8 +8,14 @@
         <link rel="stylesheet" type="text/css" href="css/gofish.css">
     </head>
     <body>
-        <div class="container">
-            <p>Global Header</p>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="/gofish-dojo/">GoFish!</a>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
             <div id="game"></div>
         </div>
         

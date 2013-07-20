@@ -3,8 +3,12 @@ package gofish.game.player;
 import gofish.game.Engine;
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
+import gofish.game.card.Series;
+import gofish.game.engine.GameStatusException;
+import gofish.game.engine.PlayerActionException;
 import gofish.game.player.action.Action;
 import gofish.game.player.action.AskCardAction;
+import gofish.game.player.action.DropSeriesAction;
 import gofish.game.player.action.QuitGameAction;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,26 +27,44 @@ public class Computer extends Player {
     public void play(Engine engine) {
         Action action;        
         try {
+            // Computer player will always try to drop complete series
+            dropAllCompleteSeries(engine);
+            
+            // Prepare card request if possible
             Player askFrom = playerToAsk(engine);
             String cardName = cardNameToAsk(engine);
             action = new AskCardAction(this, askFrom, cardName);
-        } catch (Exception e) {
+        } catch (GameStatusException | PlayerActionException e) {
+            // Something went wrong - quit game
             action = new QuitGameAction(this, e.getMessage());
         }
         
-        engine.performPlayerAction(action);
+        try {
+            engine.performPlayerAction(action);
+        } catch (GameStatusException | PlayerActionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public void dropAllCompleteSeries(Engine engine) throws GameStatusException, PlayerActionException {
+        Series series = getCompleteSeries();
+        while (series != null) {
+            Action action = new DropSeriesAction(this, series);
+            engine.performPlayerAction(action);
+            series = getCompleteSeries();
+        }
     }
 
-    private Player playerToAsk(Engine engine) throws Exception {
+    private Player playerToAsk(Engine engine) throws PlayerActionException {
         List<Player> otherPlayers = otherPlayers(engine.getPlayers());
         if (otherPlayers.isEmpty()) {
-            throw new Exception("No other players");
+            throw new PlayerActionException("No other players");
         }
         int randomIndex = randomGenerator.nextInt(otherPlayers.size());
         return otherPlayers.get(randomIndex);
     }
 
-    private String cardNameToAsk(Engine engine) throws Exception {
+    private String cardNameToAsk(Engine engine) throws PlayerActionException {
         CardsCollection hand = getHand();
         for (String property : hand.properties()) {
             Set<Card> cards = engine.findCards(property);
@@ -54,7 +76,7 @@ public class Computer extends Player {
                 }
             }
         }
-        throw new Exception("No cards left");
+        throw new PlayerActionException("No cards left");
     }
     
     /**

@@ -1,6 +1,7 @@
 package gofish.servlet;
 
 import gofish.game.Engine;
+import gofish.game.player.Human;
 import gofish.servlet.observer.CardsDealerObserver;
 import gofish.servlet.observer.EventsQueueObserver;
 import java.io.IOException;
@@ -55,7 +56,11 @@ abstract public class BaseServlet extends HttpServlet {
     }
     
     protected boolean isLoggedIn(HttpSession session) {
-        return (session.getAttribute("playerId") != null);
+        return (getPlayer(session) != null);
+    }
+    
+    protected Human getPlayer(HttpSession session) {
+        return (Human) session.getAttribute("player");
     }
 
 }

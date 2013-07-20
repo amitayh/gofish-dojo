@@ -1,4 +1,4 @@
-define(['dojo/request'], function(request) {
+define(['dojo/_base/lang', 'dojo/request'], function(lang, request) {
     
     return {
         
@@ -25,6 +25,49 @@ define(['dojo/request'], function(request) {
                 method: 'post',
                 handleAs: 'json'
             });
+        },
+        
+        getAvailableCards: function() {
+            return request('getAvailableCards', {handleAs: 'json'});
+        },
+        
+        performPlayerAction: function(action, args) {
+            var data = {action: action};
+            if (args !== undefined) {
+                lang.mixin(data, args);
+            }
+            return request('performPlayerAction', {
+                data: data,
+                method: 'post',
+                handleAs: 'json'
+            });
+        },
+        
+        askCard: function(askFrom, cardName) {
+            return this.performPlayerAction('askCard', {
+                askFrom: askFrom,
+                cardName: cardName
+            });
+        },
+        
+        dropSeries: function(cards) {
+            var cardNames = [];
+            for (var id in cards) {
+                if (cards.hasOwnProperty(id)) {
+                    cardNames.push(cards[id].getName());
+                }
+            }
+            return this.performPlayerAction('dropSeries', {
+                cards: cardNames.join(',')
+            });
+        },
+        
+        skipTurn: function() {
+            return this.performPlayerAction('skipTurn');
+        },
+        
+        quitGame: function() {
+            return this.performPlayerAction('quitGame');
         }
         
     };

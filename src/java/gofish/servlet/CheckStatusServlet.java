@@ -3,9 +3,9 @@ package gofish.servlet;
 import gofish.game.Engine;
 import gofish.game.config.Config;
 import gofish.game.event.Event;
+import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
 import gofish.servlet.observer.EventsQueueObserver;
-import java.util.Date;
 import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.annotation.WebServlet;
@@ -18,12 +18,21 @@ public class CheckStatusServlet extends AjaxServlet {
     @Override
     protected Object getData(HttpServletRequest request) throws Exception {
         HttpSession session = request.getSession(true);
+        Player player = getPlayer(session);
         Engine engine = getEngine();
         
         // Always include game status and player ID from session
         CheckStatusResult result = new CheckStatusResult();
         result.status = engine.getStatus();
-        result.playerId = (Integer) session.getAttribute("playerId");
+        if (player != null) {
+            result.playerId = player.getId();
+        }
+        
+        EventsQueueObserver eventsQueue = getEventsQueue();
+        if (result.status == Engine.Status.ENDED) {
+//            session.invalidate();
+//            eventsQueue.clear();
+        }
         
         // Add additional information as needed
         Config config = engine.getConfig();
@@ -34,13 +43,9 @@ public class CheckStatusServlet extends AjaxServlet {
         
         Integer lastEvent = ServletUtils.getInteger(request, "lastEvent");
         if (lastEvent != null) {
-            EventsQueueObserver eventsQueue = getEventsQueue();
             result.events = eventsQueue.getEvents(lastEvent);
             result.totalEvents = eventsQueue.getTotalNumEvents();
         }
-        
-        // Save time to check timeouts
-        session.setAttribute("lastSeen", new Date());
         
         return result;
     }

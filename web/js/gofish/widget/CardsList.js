@@ -1,29 +1,66 @@
 define([
     'dojo/_base/declare',
+    'dojo/on',
     'dojo/dom-construct',
+    'dojo/dom-class',
+    'dojo/dom-geometry',
+    'dijit/registry',
     'dijit/_WidgetBase',
     'gofish/widget/Card'
-], function(declare, domConstruct, _WidgetBase, Card) {
+], function(declare, on, domConstruct, domClass, domGeometry,
+            registry, _WidgetBase, Card) {
+    
+    // Used to determine position for animation
+    var FakeCard = new Card({cardId: 0, cardName: ''});
+    domClass.add(FakeCard.domNode, 'fake');
 
     return declare(_WidgetBase, {
+        
+        length: 0,
+        
+        selected: 0,
+        
+        maxSelected: 0,
+        
+        selectionEnabled: false,
 
         buildRendering: function() {
+            this.cards = {};
+            this.selectedCards = {};
             this.domNode = domConstruct.create('ul', {
                 className: 'cards-list clearfix'
             });
         },
         
-        setCards: function(cards) {
-            var container = this.domNode, card;
-            this.cards = {};
-            for (var i = 0, l = cards.length; i < l; i++) {
-                card = new Card({
-                    cardId: cards[i].id,
-                    cardName: cards[i].name
-                });
-                this.cards[card.get('id')] = card;
-                domConstruct.place(card.domNode, container);
+        getCardPosition: function(cardId) {
+            var card = this.cards[cardId],
+                position = domGeometry.position(card.domNode, true);
+            return position;
+        },
+        
+        getNextCardPosition: function() {
+            domConstruct.place(FakeCard.domNode, this.domNode);
+            var position = domGeometry.position(FakeCard.domNode, true);
+            this.domNode.removeChild(FakeCard.domNode);
+            return position;
+        },
+        
+        addCard: function(card) {
+            this.unselect(card);
+            this.cards[card.getId()] = card;
+            domConstruct.place(card.domNode, this.domNode);
+            this.length++;
+        },
+        
+        removeCard: function(cardId) {
+            var card = this.cards[cardId];
+            if (card) {
+                this.unselect(card);
+                this.domNode.removeChild(card.domNode);
+                delete this.cards[cardId];
+                this.length--;
             }
+            return card;
         },
         
         revealCards: function() {
@@ -33,7 +70,65 @@ define([
                     cards[id].reveal();
                 }
             }
-        }
+        },
+        
+        clearSelection: function() {
+            var selected = this.selectedCards;
+            for (var id in selected) {
+                if (selected.hasOwnProperty(id)) {
+                    this.unselect(selected[id]);
+                }
+            }
+        },
+        
+        initSelection: function(maxSelected) {
+            this.maxSelected = maxSelected;
+            
+            var self = this;
+            on(this.domNode, '.card:click', function() {
+                if (self.selectionEnabled) {
+                    var card = registry.byNode(this), isSelected = self.isSelected(card);
+                    self[isSelected ? 'unselect' : 'select'](card);
+                }
+            });
+        },
+        
+        enableSelection: function() {
+            domClass.add(this.domNode, 'selection-enabled');
+            this.selectionEnabled = true;
+        },
+        
+        disableSelection: function() {
+            domClass.remove(this.domNode, 'selection-enabled');
+            this.selectionEnabled = false;
+            this.clearSelection();
+        },
+        
+        isSelected: function(card) {
+            return (this.selectedCards[card.getId()] !== undefined);
+        },
+        
+        select: function(card) {
+            if (!this.isSelected(card) && this.selected < this.maxSelected) {
+                domClass.add(card.domNode, 'card-selected');
+                this.selectedCards[card.getId()] = card;
+                this.selected++;
+                this.emit('Select', {card: card});
+            }
+        },
+        
+        unselect: function(card) {
+            if (this.isSelected(card)) {
+                domClass.remove(card.domNode, 'card-selected');
+                delete this.selectedCards[card.getId()];
+                this.selected--;
+                this.emit('Deselect', {card: card});
+            }
+        },
+        
+        onSelect: function(e) {},
+        
+        onDeselect: function(e) {}
 
     });
 

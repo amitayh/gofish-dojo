@@ -23,6 +23,7 @@ abstract public class AjaxServlet extends BaseServlet {
     private static Gson gson;
     
     static {
+        // Register custom type adapters
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(Card.class, new CardSerializer());
         builder.registerTypeAdapter(Player.class, new PlayerSerializer());

@@ -121,7 +121,7 @@ define([
         },
 
         gameFullError: function() {
-            this.pages.error.setError('Game already started');
+            this.pages.error.setError('Game already started, please try again later');
             this.loadPage('error');
         },
 

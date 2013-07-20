@@ -2,26 +2,40 @@ package gofish.game;
 
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
+import gofish.game.card.Series;
 import gofish.game.config.Config;
 import gofish.game.config.ValidationException;
 import gofish.game.engine.AddPlayerException;
 import gofish.game.engine.GameStatusException;
+import gofish.game.engine.PlayerActionException;
 import gofish.game.engine.StartGameException;
 import gofish.game.event.AskCardEvent;
 import gofish.game.event.CardMovedEvent;
 import gofish.game.event.ChangeTurnEvent;
 import gofish.game.event.Event;
+import gofish.game.event.GameOverEvent;
 import gofish.game.event.GoFishEvent;
 import gofish.game.event.PlayerJoinEvent;
 import gofish.game.event.PlayerOutEvent;
+import gofish.game.event.QuitGameEvent;
+import gofish.game.event.SeriesDroppedEvent;
+import gofish.game.event.SkipTurnEvent;
 import gofish.game.event.StartGameEvent;
 import gofish.game.player.ComputerPlayerObserver;
 import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
 import gofish.game.player.action.Action;
 import gofish.game.player.action.AskCardAction;
+import gofish.game.player.action.DropSeriesAction;
+import gofish.game.player.action.QuitGameAction;
+import gofish.game.player.action.SkipTurnAction;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Observable;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 public class Engine extends Observable {
     
@@ -32,6 +46,8 @@ public class Engine extends Observable {
     final public static int MAX_NUM_PLAYERS = 6;
 
     final public static int MIN_NUM_CARDS = 28;
+    
+    final public static long AUTO_QUIT_DELAY = TimeUnit.MINUTES.toMillis(5);
     
     public enum Status {
         IDLE,
@@ -45,6 +61,10 @@ public class Engine extends Observable {
     private Config config;
     
     private PlayersList players;
+    
+    private AutoQuitTask autoQuitTask;
+    
+    private Timer timer = new Timer(true);
     
     /**
      * Map containing all cards still available in the game
@@ -85,6 +105,10 @@ public class Engine extends Observable {
     
     public PlayersList getPlayers() {
         return players;
+    }
+    
+    public Player getPlayer(Integer playerId) {
+        return players.getPlayerById(playerId);
     }
     
     public Set<Card> findCards(String property) {
@@ -129,43 +153,60 @@ public class Engine extends Observable {
                 MIN_NUM_CARDS + ", actual: " + numCards + ")");
         }
         
+        dispatchEvent(new StartGameEvent(players));
         status = Status.STARTED;
-        dispatchEvent(new StartGameEvent());
         
         nextTurn();
     }
     
-    public void performPlayerAction(Action action) {
-//        ensureStatus(Status.STARTED);
+    public void performPlayerAction(Action action) throws GameStatusException, PlayerActionException {
+        ensureStatus(Status.STARTED);
         
-        if (action.getPlayer() != getCurrentPlayer()) {
-            throw new IllegalStateException("Only current player can perform actions");
+        Player player = action.getPlayer();
+        if (player != getCurrentPlayer()) {
+            throw new PlayerActionException("Only current player can perform actions");
+        }
+        
+        if (autoQuitTask != null && autoQuitTask.player == player) {
+            restartAutoQuitTimer(player);
         }
         
         if (action instanceof AskCardAction) {
-            playTurn((AskCardAction) action);
+            askCard((AskCardAction) action);
+        } else if (action instanceof DropSeriesAction) {
+            dropSeries((DropSeriesAction) action);
+        } else if (action instanceof SkipTurnAction) {
+            skipTurn(player);
+        } else if (action instanceof QuitGameAction) {
+            quitGame(player);
+            nextTurn();
         }
     }
     
-    private void playTurn(AskCardAction action) {
-        if (!validateCardRequest(action)) {
-            // TODO
-        }
-        
-        boolean anotherTurn = false;
-
-        // Check if player being asked has the requested card
+    private void askCard(AskCardAction action) throws PlayerActionException {
         Player player = action.getPlayer();
         Player askFrom = action.getAskFrom();
         String cardName = action.getCardName();
-        Card card = askFrom.getHand().getCard(cardName);
+        boolean anotherTurn = false;
+        
+        // Validate action
+        if (config.getForceShowOfSeries() && player.hasCompleteSeries()) {
+            throw new PlayerActionException("Must drop complete series before asking for cards");
+        }
+        if (!validateCardRequest(player, cardName)) {
+            throw new PlayerActionException("Invalid card request");
+        }
+        
         dispatchEvent(new AskCardEvent(player, askFrom, cardName));
+        
+        // Check if player being asked has the requested card
+        Card card = askFrom.getHand().getCard(cardName);
         if (card == null) {
             // GoFish!
             dispatchEvent(new GoFishEvent(askFrom, player));
         } else {
             // Give away card
-            moveCard(player, askFrom, card);
+            moveCard(askFrom, player, card);
             if (player.isPlaying() && players.size() > 1) {
                 anotherTurn = config.getAllowMutipleRequests();
             }
@@ -178,14 +219,14 @@ public class Engine extends Observable {
         }
     }
     
-    private boolean validateCardRequest(AskCardAction action) {
+    private boolean validateCardRequest(Player player, String cardName) {
         boolean result = false;
         
         // Check if requested card is in the game
-        Card card = availableCards.getCard(action.getCardName());
+        Card card = availableCards.getCard(cardName);
         if (card != null) {
             // Check that the player is allowed to ask for this card
-            CardsCollection hand = action.getPlayer().getHand();
+            CardsCollection hand = player.getHand();
             for (String property : card.getProperties()) {
                 if (hand.hasSeries(property)) {
                     result = true;
@@ -198,10 +239,10 @@ public class Engine extends Observable {
     }
     
     private void moveCard(Player from, Player to, Card card) {
-//        from.removeCard(card);
-//        to.addCard(card);
+        from.removeCard(card);
+        to.addCard(card);
         dispatchEvent(new CardMovedEvent(from, to, card));
-//        checkPlayer(from);
+        checkPlayer(from);
     }
     
     private void checkPlayer(Player player) {
@@ -215,15 +256,94 @@ public class Engine extends Observable {
     }
     
     private void nextTurn() {
-        Player currentPlayer;
-        do {
-            // TODO: check endless loop
-            // Cycle players who are still playing
-            currentPlayerIndex = nextPlayerIndex();
-            currentPlayer = getCurrentPlayer();
-        } while (!currentPlayer.isPlaying());
+        if (countActivePlayers() > 1) {
+            Player currentPlayer;
+            do {
+                // Cycle players who are still playing
+                currentPlayerIndex = nextPlayerIndex();
+                currentPlayer = getCurrentPlayer();
+            } while (!currentPlayer.isPlaying());
+            
+            if (currentPlayer.isHuman()) {
+                restartAutoQuitTimer(currentPlayer);
+            } else {
+                cancelAutoQuitTimer();
+            }
+            
+            dispatchEvent(new ChangeTurnEvent(currentPlayer));
+        } else {
+            endGame();
+        }
+    }
+    
+    private void restartAutoQuitTimer(Player player) {
+        cancelAutoQuitTimer();
+        autoQuitTask = new AutoQuitTask(player);
+        timer.schedule(autoQuitTask, AUTO_QUIT_DELAY);
+    }
+    
+    private void cancelAutoQuitTimer() {
+        if (autoQuitTask != null) {
+            autoQuitTask.cancel();
+            autoQuitTask = null;
+        }
+    }
+    
+    private void endGame() {
+        Player winner = getWinner();
+        for (Player player : players) {
+            if (player.isPlaying()) {
+                quitGame(player);
+            }
+        }
+        dispatchEvent(new GameOverEvent(winner));
+        status = Status.ENDED;
+    }
+    
+    private Player getWinner() {
+        return Collections.max(players, new Comparator<Player>() {
+            @Override
+            public int compare(Player p1, Player p2) {
+                // Compare players by number of completed series
+                return p1.getAllCompleteSeries().size() - p2.getAllCompleteSeries().size();
+            }
+        });
+    }
+    
+    private int countActivePlayers() {
+        int activePlayers = 0;
+        for (Player player : players) {
+            if (player.isPlaying()) {
+                activePlayers++;
+            }
+        }
+        return activePlayers;
+    }
+    
+    private void dropSeries(DropSeriesAction action) throws PlayerActionException {
+        Player player = action.getPlayer();
+        Series series = action.getSeries();
+        CardsCollection hand = player.getHand();
+        Set<Card> cards = hand.getByProperty(series.getProperty());
         
-        dispatchEvent(new ChangeTurnEvent(currentPlayer));
+        if (!cards.equals(series.getCards())) {
+            throw new PlayerActionException("Player doesn't have all cards in series");
+        }
+        
+        availableCards.removeAll(cards);
+        player.dropCompleteSeries(series);
+        dispatchEvent(new SeriesDroppedEvent(player, series));
+    }
+    
+    private void skipTurn(Player player) {
+        dispatchEvent(new SkipTurnEvent(player));
+        nextTurn();
+    }
+    
+    private void quitGame(Player player) {
+        availableCards.removeAll(player.getHand());
+        player.quitGame();
+        dispatchEvent(new QuitGameEvent(player));
     }
     
     private int nextPlayerIndex() {
@@ -249,6 +369,22 @@ public class Engine extends Observable {
     private void dispatchEvent(Event event) {
         setChanged();
         notifyObservers(event);
+    }
+    
+    private class AutoQuitTask extends TimerTask {
+        
+        private Player player;
+
+        public AutoQuitTask(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void run() {
+            quitGame(player);
+            nextTurn();
+        }
+        
     }
 
 }
