@@ -11,6 +11,10 @@ public class QuitGameAction extends Action {
         this.reason = reason;
     }
 
+    public String getReason() {
+        return reason;
+    }
+
     public QuitGameAction(Player player) {
         this(player, "Quit");
     }

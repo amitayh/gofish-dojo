@@ -1,8 +1,11 @@
 define([
     'dojo/_base/declare',
     'dojo/_base/lang',
+    'dojo/_base/fx',
     'dojo/dom-construct',
     'dojo/dom-class',
+    'dojo/dom-style',
+    'dojo/Deferred',
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
     'dijit/_WidgetsInTemplateMixin',
@@ -11,12 +14,14 @@ define([
     'gofish/widget/PlayerControls',
     'gofish/widget/Card',
     'gofish/widget/CardsList',
+    'gofish/widget/Balloon',
     'dojo/text!gofish/template/Player.html'
-], function(declare, lang, domConstruct, domClass, _WidgetBase, _TemplatedMixin,
-            _WidgetsInTemplateMixin, entities, dataService, PlayerControls, Card,
-            CardsList, template) {
+], function(declare, lang, fx, domConstruct, domClass, domStyle, Deferred, _WidgetBase,
+            _TemplatedMixin, _WidgetsInTemplateMixin, entities, dataService,
+            PlayerControls, Card, CardsList, Balloon, template) {
     
-    var MaxSelectedCards = 4;
+    var MaxSelectedCards = 4,
+        DefaultBalloonDelay = 1500;
 
     return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
 
@@ -58,6 +63,20 @@ define([
             this.numCompleteSeriesNode.innerHTML = this.numCompleteSeries;
         },
         
+        say: function(message, delay) {
+            var deferred = new Deferred(),
+                balloon = this.balloon;
+            
+            balloon.setContent(message);
+            balloon.show(this.nameNode);
+            setTimeout(function() {
+                balloon.hide();
+                deferred.resolve();
+            }, delay || DefaultBalloonDelay);
+            
+            return deferred.promise;
+        },
+        
         removeCard: function(cardId) {
             var card = this.hand.removeCard(cardId);
             this.updateCounters();
@@ -67,6 +86,37 @@ define([
         addCard: function(card) {
             this.hand.addCard(card);
             this.updateCounters();
+        },
+        
+        animateAddCard: function(card, startPosition) {
+            // Init
+            domStyle.set(card.domNode, {
+                position: 'absolute',
+                top: startPosition.y + 'px',
+                left: startPosition.x + 'px'
+            });
+            
+            // Add card
+            var deferred = new Deferred(),
+                endPosition = this.hand.getNextCardPosition();
+            
+            this.addCard(card);
+            
+            // Animate position
+            fx.animateProperty({
+                node: card.domNode,
+                properties: {
+                    top: endPosition.y,
+                    left: endPosition.x
+                },
+                onEnd: function() {
+                    domStyle.set(card.domNode, 'position', 'static');
+                    deferred.resolve();
+                }
+            }).play();
+            
+            // Promise will be resolved when animation is finished
+            return deferred.promise;
         },
         
         dropSeries: function(series) {

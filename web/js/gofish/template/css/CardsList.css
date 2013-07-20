@@ -12,11 +12,14 @@
     width: 78px;
     height: 105px;
     float: left;
-    margin-left: -60px;
+    margin-right: -60px;
     white-space: nowrap;
     text-indent: -1000px;
     overflow: hidden;
-    text-align: center;
+}
+
+.card.fake {
+    visibility: hidden;
 }
 
 .selection-enabled .card {
@@ -25,10 +28,6 @@
 
 .card-selected {
     margin-top: -35px;
-}
-
-.card:first-child {
-    margin-left: 0;
 }
 
 .card-10_of_clubs {

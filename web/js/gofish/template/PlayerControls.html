@@ -1,11 +1,19 @@
 <div class="hide form-inline">
     <p>
-        Ask <select data-dojo-attach-point="playerSelector" class="input-medium"></select>
-        for card <select data-dojo-attach-point="cardSelector" class="input-medium"></select>
+        <label>
+            Ask player:
+            <select data-dojo-attach-point="playerSelector" class="input-medium"></select>
+        </label>
+        <br>
+        <label>
+            For card:
+            <select data-dojo-attach-point="cardSelector" class="input-medium"></select>
+        </label>
         <button data-dojo-attach-point="askCardButton"
                 data-dojo-attach-event="click: askCardClick"
-                class="btn">Ask card</button>
+                class="btn btn-primary">Ask card</button>
     </p>
+    <hr>
     <p>
         <button data-dojo-attach-point="dropSeriesButton"
                 data-dojo-attach-event="click: dropSeriesClick"

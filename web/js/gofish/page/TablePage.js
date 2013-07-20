@@ -19,12 +19,6 @@ define([
 
     var UpdateInterval = 1500;
     
-    function delayedPromise(delay) {
-        var deferred = new Deferred();
-        setTimeout(deferred.resolve, delay);
-        return deferred.promise;
-    }
-    
     return declare([_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
         
         templateString: template,
@@ -71,9 +65,6 @@ define([
 
             // Playback events in sequence using deferred/promise API
             array.forEach(events, function(event) {
-                
-                console.debug('Event', event); // Debug
-                
                 var method = self['play' + event.type];
                 if (method) {
                     // Add method to promise chain
@@ -132,32 +123,38 @@ define([
         
         playAskCardEvent: function(event) {
             var player = this.players[event.player.id],
-                askFrom = this.players[event.askFrom.id];
+                playerName = this.getPlayerName(player),
+                askFrom = this.players[event.askFrom.id],
+                askFromName = this.getPlayerName(askFrom),
+                cardName = this.getCardName(event.cardName);
             
-            this.logger.log(
-                this.getPlayerName(player) + ' asked ' +
-                this.getPlayerName(askFrom) + ' for card ' +
-                this.getCardName(event.cardName)
-            );
+            this.logger.log(playerName + ' asked ' + askFromName + ' for card ' + cardName);
             
-            return delayedPromise(500);
+            return player.say(askFromName + ', do you have ' + cardName + '?');
         },
         
         playCardMovedEvent: function(event) {
             var from = this.players[event.from.id],
-                to = this.players[event.to.id];
+                fromName = this.getPlayerName(from),
+                to = this.players[event.to.id],
+                toName = this.getPlayerName(to),
+                cardName = this.getCardName(event.card.name),
+                self = this;
             
-            var card = from.removeCard(event.card.id);
-            card[to === this.player ? 'reveal' : 'conceal']();
-            to.addCard(card);
-            
-            this.logger.log(
-                this.getPlayerName(from) + ' gave ' +
-                this.getCardName(event.card.name) + ' to ' +
-                this.getPlayerName(to)
-            );
+            this.logger.log(fromName + ' gave ' + cardName + ' to ' + toName);
     
-            return delayedPromise(500);
+            return from.say('Yes I do, here you go').then(function() {
+                return self.animateCardMove(from, to, event.card.id);
+            });
+        },
+        
+        animateCardMove: function(from, to, cardId) {
+            var initialPosition = from.hand.getCardPosition(cardId),
+                card = from.removeCard(cardId);
+            
+            card[to === this.player ? 'reveal' : 'conceal']();
+            
+            return to.animateAddCard(card, initialPosition);
         },
         
         playSeriesDroppedEvent: function(event) {
@@ -170,20 +167,17 @@ define([
                 this.getPlayerName(player) + ' dropped a series of ' +
                 this.getSeriesName(series)
             );
-    
-            return delayedPromise(500);
         },
         
         playGoFishEvent: function(event) {
             var player1 = this.players[event.player1.id],
-                player2 = this.players[event.player2.id];
+                player1Name = this.getPlayerName(player1),
+                player2 = this.players[event.player2.id],
+                player2Name = this.getPlayerName(player2);
             
-            this.logger.log(
-                this.getPlayerName(player1) + ' tells ' +
-                this.getPlayerName(player2) + ' to go fish '
-            );
+            this.logger.log(player1Name + ' tells ' + player2Name + ' to go fish');
     
-            return delayedPromise(500);
+            return player1.say('Go fish!');
         },
         
         playSkipTurnEvent: function(event) {

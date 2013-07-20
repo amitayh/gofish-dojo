@@ -33,6 +33,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Observable;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 public class Engine extends Observable {
     
@@ -43,6 +46,8 @@ public class Engine extends Observable {
     final public static int MAX_NUM_PLAYERS = 6;
 
     final public static int MIN_NUM_CARDS = 28;
+    
+    final public static long AUTO_QUIT_DELAY = TimeUnit.MINUTES.toMillis(5);
     
     public enum Status {
         IDLE,
@@ -56,6 +61,10 @@ public class Engine extends Observable {
     private Config config;
     
     private PlayersList players;
+    
+    private AutoQuitTask autoQuitTask;
+    
+    private Timer timer = new Timer(true);
     
     /**
      * Map containing all cards still available in the game
@@ -158,6 +167,10 @@ public class Engine extends Observable {
             throw new PlayerActionException("Only current player can perform actions");
         }
         
+        if (autoQuitTask != null && autoQuitTask.player == player) {
+            restartAutoQuitTimer(player);
+        }
+        
         if (action instanceof AskCardAction) {
             askCard((AskCardAction) action);
         } else if (action instanceof DropSeriesAction) {
@@ -250,9 +263,29 @@ public class Engine extends Observable {
                 currentPlayerIndex = nextPlayerIndex();
                 currentPlayer = getCurrentPlayer();
             } while (!currentPlayer.isPlaying());
+            
+            if (currentPlayer.isHuman()) {
+                restartAutoQuitTimer(currentPlayer);
+            } else {
+                cancelAutoQuitTimer();
+            }
+            
             dispatchEvent(new ChangeTurnEvent(currentPlayer));
         } else {
             endGame();
+        }
+    }
+    
+    private void restartAutoQuitTimer(Player player) {
+        cancelAutoQuitTimer();
+        autoQuitTask = new AutoQuitTask(player);
+        timer.schedule(autoQuitTask, AUTO_QUIT_DELAY);
+    }
+    
+    private void cancelAutoQuitTimer() {
+        if (autoQuitTask != null) {
+            autoQuitTask.cancel();
+            autoQuitTask = null;
         }
     }
     
@@ -336,6 +369,22 @@ public class Engine extends Observable {
     private void dispatchEvent(Event event) {
         setChanged();
         notifyObservers(event);
+    }
+    
+    private class AutoQuitTask extends TimerTask {
+        
+        private Player player;
+
+        public AutoQuitTask(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void run() {
+            quitGame(player);
+            nextTurn();
+        }
+        
     }
 
 }

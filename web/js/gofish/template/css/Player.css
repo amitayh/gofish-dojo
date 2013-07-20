@@ -1,5 +1,15 @@
+.players-list {
+    
+}
+
+.player {
+    float: left;
+    width: 30%;
+    padding: 5px;
+}
+
 .player.current {
-    background-color: lightyellow;
+    background-color: #ffffe0;
 }
 
 .player.muted .name {
@@ -7,10 +17,13 @@
 }
 
 .complete-series {
-    margin: 10px 0;
+    height: 105px;
 }
 
 .complete-series .cards-list {
     float: left;
-    margin-right: 10px;
+    width: 132px;
+    height: 105px;
+    padding: 0;
+    margin: 0 10px 10px 0;
 }

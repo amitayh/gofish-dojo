@@ -3,9 +3,16 @@ define([
     'dojo/on',
     'dojo/dom-construct',
     'dojo/dom-class',
+    'dojo/dom-geometry',
     'dijit/registry',
-    'dijit/_WidgetBase'
-], function(declare, on, domConstruct, domClass, registry, _WidgetBase) {
+    'dijit/_WidgetBase',
+    'gofish/widget/Card'
+], function(declare, on, domConstruct, domClass, domGeometry,
+            registry, _WidgetBase, Card) {
+    
+    // Used to determine position for animation
+    var FakeCard = new Card({cardId: 0, cardName: ''});
+    domClass.add(FakeCard.domNode, 'fake');
 
     return declare(_WidgetBase, {
         
@@ -23,6 +30,19 @@ define([
             this.domNode = domConstruct.create('ul', {
                 className: 'cards-list clearfix'
             });
+        },
+        
+        getCardPosition: function(cardId) {
+            var card = this.cards[cardId],
+                position = domGeometry.position(card.domNode, true);
+            return position;
+        },
+        
+        getNextCardPosition: function() {
+            domConstruct.place(FakeCard.domNode, this.domNode);
+            var position = domGeometry.position(FakeCard.domNode, true);
+            this.domNode.removeChild(FakeCard.domNode);
+            return position;
         },
         
         addCard: function(card) {

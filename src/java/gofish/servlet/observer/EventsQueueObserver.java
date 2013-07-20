@@ -23,4 +23,8 @@ public class EventsQueueObserver implements Observer {
         return queue.size();
     }
     
+    public void clear() {
+        queue.clear();
+    }
+    
 }
