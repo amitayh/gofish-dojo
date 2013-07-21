@@ -41,8 +41,8 @@ define([
         
         updateCardSelector: function() {
             var selector = this.cardSelector;
-            domConstruct.empty(selector);
             dataService.getAvailableCards().then(function(cards) {
+                domConstruct.empty(selector);
                 for (var i = 0, l = cards.length; i < l; i++) {
                     var options = {innerHTML: entities.encode(cards[i])};
                     domConstruct.create('option', options, selector);

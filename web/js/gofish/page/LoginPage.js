@@ -1,5 +1,6 @@
 define([
     'dojo/_base/declare',
+    'dojo/_base/array',
     'dojo/_base/lang',
     'dojo/_base/event',
     'dojo/dom-construct',
@@ -11,7 +12,7 @@ define([
     'dojox/html/entities',
     'gofish/data-service',
     'dojo/text!gofish/template/LoginPage.html'
-], function(declare, lang, event, domConstruct, domClass, query, topic,
+], function(declare, array, lang, event, domConstruct, domClass, query, topic,
             _WidgetBase, _TemplatedMixin, entities, dataService, template) {
     
     var UpdateInterval = 1500;
@@ -22,16 +23,33 @@ define([
         
         updateTimer: null,
         
+        xml: false,
+        
+        xmlConfig: function(flag) {
+            this.xml = flag;
+            domClass[flag ? 'add' : 'remove'](this.nameInput, 'hide');
+            domClass[flag ? 'remove' : 'add'](this.nameSelect, 'hide');
+        },
+        
         submitForm: function(e) {
-            var name = this.nameInput.value;
+            var name = this.xml ? this.nameSelect.value : this.nameInput.value;
             if (name === '') {
                 this.setAlert('Player name is required', 'error');
             } else {
-                this.emit('JoinGame', {name: this.nameInput.value});
+                this.emit('JoinGame', {name: name});
             }
 
             // Stop regular submission
             event.stop(e);
+        },
+        
+        resetForm: function() {
+            this.nameInput.disabled = false;
+            this.nameInput.placeholder = 'Please enter your name';
+            this.nameInput.value = '';
+            this.nameSelect.disabled = false;
+            domConstruct.empty(this.nameSelect);
+            this.joinButton.disabled = false;
         },
         
         clearForm: function() {
@@ -39,11 +57,15 @@ define([
             this.nameInput.disabled = true;
             this.nameInput.placeholder = '';
             this.nameInput.value = '';
+            this.nameSelect.blur();
+            this.nameSelect.disabled = true;
+            domConstruct.empty(this.nameSelect);
             this.joinButton.disabled = true;
         },
         
         onLoad: function() {
             this.getPlayersList();
+            this.resetForm();
             this.nameInput.focus();
         },
         
@@ -66,6 +88,7 @@ define([
                 callback = lang.hitch(this, 'getPlayersList');
 
             dataService.checkStatus(options).then(function(response) {
+                self.updateHumanPlayersNames(response.humanPlayersNames);
                 switch (response.status) {
                     case 'CONFIGURED':
                         // Update list and reset update timer
@@ -81,6 +104,15 @@ define([
                         topic.publish('gofish/restart', {});
                         break;
                 }
+            });
+        },
+        
+        updateHumanPlayersNames: function(names) {
+            var select = this.nameSelect;
+            domConstruct.empty(select);
+            array.forEach(names, function(name) {
+                var options = {innerHTML: entities.encode(name)};
+                domConstruct.create('option', options, select);
             });
         },
         

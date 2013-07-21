@@ -14,8 +14,8 @@
     float: left;
     margin-right: -60px;
     white-space: nowrap;
-    text-indent: -1000px;
     overflow: hidden;
+    text-align: center;
 }
 
 .card.fake {
@@ -32,212 +32,265 @@
 
 .card-10_of_clubs {
     background-position: -5px -5px;
+    text-indent: -1000px;
 }
 
 .card-10_of_diamonds {
     background-position: -93px -5px;
+    text-indent: -1000px;
 }
 
 .card-10_of_hearts {
     background-position: -181px -5px;
+    text-indent: -1000px;
 }
 
 .card-10_of_spades {
     background-position: -269px -5px;
+    text-indent: -1000px;
 }
 
 .card-2_of_clubs {
     background-position: -357px -5px;
+    text-indent: -1000px;
 }
 
 .card-2_of_diamonds {
     background-position: -445px -5px;
+    text-indent: -1000px;
 }
 
 .card-2_of_hearts {
     background-position: -533px -5px;
+    text-indent: -1000px;
 }
 
 .card-2_of_spades {
     background-position: -621px -5px;
+    text-indent: -1000px;
 }
 
 .card-3_of_clubs {
     background-position: -5px -120px;
+    text-indent: -1000px;
 }
 
 .card-3_of_diamonds {
     background-position: -93px -120px;
+    text-indent: -1000px;
 }
 
 .card-3_of_hearts {
     background-position: -181px -120px;
+    text-indent: -1000px;
 }
 
 .card-3_of_spades {
     background-position: -269px -120px;
+    text-indent: -1000px;
 }
 
 .card-4_of_clubs {
     background-position: -357px -120px;
+    text-indent: -1000px;
 }
 
 .card-4_of_diamonds {
     background-position: -445px -120px;
+    text-indent: -1000px;
 }
 
 .card-4_of_hearts {
     background-position: -533px -120px;
+    text-indent: -1000px;
 }
 
 .card-4_of_spades {
     background-position: -621px -120px;
+    text-indent: -1000px;
 }
 
 .card-5_of_clubs {
     background-position: -5px -235px;
+    text-indent: -1000px;
 }
 
 .card-5_of_diamonds {
     background-position: -93px -235px;
+    text-indent: -1000px;
 }
 
 .card-5_of_hearts {
     background-position: -181px -235px;
+    text-indent: -1000px;
 }
 
 .card-5_of_spades {
     background-position: -269px -235px;
+    text-indent: -1000px;
 }
 
 .card-6_of_clubs {
     background-position: -357px -235px;
+    text-indent: -1000px;
 }
 
 .card-6_of_diamonds {
     background-position: -445px -235px;
+    text-indent: -1000px;
 }
 
 .card-6_of_hearts {
     background-position: -533px -235px;
+    text-indent: -1000px;
 }
 
 .card-6_of_spades {
     background-position: -621px -235px;
+    text-indent: -1000px;
 }
 
 .card-7_of_clubs {
     background-position: -5px -351px;
+    text-indent: -1000px;
 }
 
 .card-7_of_diamonds {
     background-position: -93px -351px;
+    text-indent: -1000px;
 }
 
 .card-7_of_hearts {
     background-position: -181px -351px;
+    text-indent: -1000px;
 }
 
 .card-7_of_spades {
     background-position: -269px -351px;
+    text-indent: -1000px;
 }
 
 .card-8_of_clubs {
     background-position: -357px -351px;
+    text-indent: -1000px;
 }
 
 .card-8_of_diamonds {
     background-position: -445px -351px;
+    text-indent: -1000px;
 }
 
 .card-8_of_hearts {
     background-position: -533px -351px;
+    text-indent: -1000px;
 }
 
 .card-8_of_spades {
     background-position: -621px -351px;
+    text-indent: -1000px;
 }
 
 .card-9_of_clubs {
     background-position: -5px -466px;
+    text-indent: -1000px;
 }
 
 .card-9_of_diamonds {
     background-position: -93px -466px;
+    text-indent: -1000px;
 }
 
 .card-9_of_hearts {
     background-position: -181px -466px;
+    text-indent: -1000px;
 }
 
 .card-9_of_spades {
     background-position: -269px -466px;
+    text-indent: -1000px;
 }
 
 .card-a_of_clubs {
     background-position: -357px -466px;
+    text-indent: -1000px;
 }
 
 .card-a_of_diamonds {
     background-position: -445px -466px;
+    text-indent: -1000px;
 }
 
 .card-a_of_hearts {
     background-position: -533px -466px;
+    text-indent: -1000px;
 }
 
 .card-a_of_spades {
     background-position: -621px -466px;
+    text-indent: -1000px;
 }
 
 .card-back {
     background-position: -5px -581px;
+    text-indent: -1000px;
 }
 
 .card-j_of_clubs {
     background-position: -181px -581px;
+    text-indent: -1000px;
 }
 
 .card-j_of_diamonds {
     background-position: -269px -581px;
+    text-indent: -1000px;
 }
 
 .card-j_of_hearts {
     background-position: -357px -581px;
+    text-indent: -1000px;
 }
 
 .card-j_of_spades {
     background-position: -445px -582px;
+    text-indent: -1000px;
 }
 
 .card-k_of_clubs {
     background-position: -533px -581px;
+    text-indent: -1000px;
 }
 
 .card-k_of_diamonds {
     background-position: -621px -581px;
+    text-indent: -1000px;
 }
 
 .card-k_of_hearts {
     background-position: -709px -5px;
+    text-indent: -1000px;
 }
 
 .card-k_of_spades {
     background-position: -709px -120px;
+    text-indent: -1000px;
 }
 
 .card-q_of_clubs {
     background-position: -709px -235px;
+    text-indent: -1000px;
 }
 
 .card-q_of_diamonds {
     background-position: -709px -350px;
+    text-indent: -1000px;
 }
 
 .card-q_of_hearts {
     background-position: -709px -465px;
+    text-indent: -1000px;
 }
 
 .card-q_of_spades {
     background-position: -709px -581px;
+    text-indent: -1000px;
 }

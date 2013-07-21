@@ -3,7 +3,8 @@
         <h3>Game Settings</h3>
     </div>
     <div class="modal-body">
-        <h4>Number of players</h4>
+        <h4>Manual configuration</h4>
+        <h5>Number of players</h5>
         <p>
             <label>
                 Human players:
@@ -19,7 +20,7 @@
                     data-dojo-attach-event="change: setComputerPlayers">
             </label>
         </p>
-        <h4>General</h4>
+        <h5>General</h5>
         <p>
             <label class="checkbox">
                 <input type="checkbox"
@@ -36,6 +37,23 @@
                 Force show completed series
             </label>
         </p>
+        
+        <hr>
+        
+        <h4>Upload configuration file</h4>
+        <form action="uploadXml" enctype="multipart/form-data" method="post" target="uploadXmlIframe">
+            <p>
+                <input type="file" name="xml" accept=".xml" data-dojo-attach-point="file">
+                <button type="submit" class="btn">
+                    <i class="icon-upload"></i>
+                    Upload
+                </button>
+            </p>
+            <p data-dojo-attach-point="uploadXmlError" class="alert alert-error hide"></p>
+        </form>
+        <!-- Hidden iframe is used as the target for the upload form -->
+        <iframe name="uploadXmlIframe" class="hide"></iframe>
+        
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-primary"

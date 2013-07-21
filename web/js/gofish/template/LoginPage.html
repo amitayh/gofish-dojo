@@ -5,7 +5,8 @@
     <div class="modal-body">
         <div data-dojo-attach-point="alert"></div>
         <form class="input-append" data-dojo-attach-point="form" data-dojo-attach-event="submit: submitForm">
-            <input type="text" placeholder="Please enter your name" data-dojo-attach-point="nameInput">
+            <input type="text" data-dojo-attach-point="nameInput" class="hide">
+            <select data-dojo-attach-point="nameSelect" class="hide"></select>
             <button class="btn" type="submit" data-dojo-attach-point="joinButton">Join game</button>
         </form>
 

@@ -2,6 +2,10 @@
     
 }
 
+.player-controls {
+    clear: both;
+}
+
 .player {
     float: left;
     width: 30%;

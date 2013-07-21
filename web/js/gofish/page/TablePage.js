@@ -25,14 +25,11 @@ define([
 
         updateTimer: null,
 
-        players: {},
-        
-        player: null,
-        
-        currentPlayer: null,
-
         onLoad: function() {
+            this.players = {};
+            this.player = this.currentPlayer = null;
             this.lastEvent = 0;
+            domConstruct.empty(this.playersList);
             this.getLastEvents();
         },
 
@@ -193,10 +190,16 @@ define([
         
         playGameOverEvent: function(event) {
             var winner = this.players[event.winner.id];
+            
             this.logger.log(
                 'Game over! Winner is ' + this.getPlayerName(winner) +
                 ' with ' + event.winnerCompleteSeries + ' complete series'
             );
+            
+            var self = this;
+            setTimeout(function() {
+                self.emit('GameOver', {});
+            }, UpdateInterval);
         },
 
         getPlayerName: function(player) {
@@ -210,7 +213,9 @@ define([
         
         getSeriesName: function(series) {
             return '<em>' + entities.encode(series.property) + "</em>'s";
-        }
+        },
+        
+        onGameOver: function(e) {}
         
     });
     

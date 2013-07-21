@@ -1,9 +1,14 @@
 define([
     'dojo/_base/declare',
+    'dojo/_base/lang',
+    'dojo/dom-class',
+    'dojo/on',
     'dijit/_WidgetBase',
     'dijit/_TemplatedMixin',
+    'dojox/html/entities',
     'dojo/text!gofish/template/ConfigPage.html'
-], function(declare, _WidgetBase, _TemplatedMixin, template) {
+], function(declare, lang, domClass, on, _WidgetBase,
+            _TemplatedMixin, entities, template) {
     
     var MinTotalPlayers = 3,
         MaxTotalPlayers = 6,
@@ -28,6 +33,31 @@ define([
         postCreate: function() {
             this.inherited(arguments);
             this.updateForm();
+            
+            // Listen to messages from the upload iframe
+            on(window, 'message', lang.hitch(this, 'uploadXmlResult'));
+        },
+        
+        uploadXmlResult: function(event) {
+            if (event.data.type === 'UploadXmlResult') {
+                this.file.value = null;
+                this.clearError();
+                if (!event.data.success) {
+                    this.setError(event.data.message);
+                } else {
+                    this.emit('StartGame', {xml: true});
+                }
+            }
+        },
+        
+        setError: function(message) {
+            this.uploadXmlError.innerHTML = entities.encode(message);
+            domClass.remove(this.uploadXmlError, 'hide');
+        },
+        
+        clearError: function() {
+            this.uploadXmlError.innerHTML = '';
+            domClass.add(this.uploadXmlError, 'hide');
         },
         
         updateForm: function() {
@@ -94,7 +124,7 @@ define([
         },
                 
         startGame: function() {
-            this.emit('StartGame', {data: this.model});
+            this.emit('StartGame', {xml: false, data: this.model});
         },
         
         onStartGame: function(e) {}

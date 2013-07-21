@@ -5,8 +5,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-@WebServlet(name = "StopGameServlet", urlPatterns = {"/stopGame"})
-public class StopGameServlet extends AjaxServlet {
+@WebServlet(name = "ResetGameServlet", urlPatterns = {"/resetGame"})
+public class ResetGameServlet extends AjaxServlet {
 
     @Override
     protected Object getData(HttpServletRequest request) throws Exception {
@@ -15,12 +15,12 @@ public class StopGameServlet extends AjaxServlet {
         if (session != null) {
             session.invalidate();
         }
+        
         // Delete game
         ServletContext application = getServletContext();
-        application.removeAttribute("game.engine");
-        application.removeAttribute("game.events");
+        application.removeAttribute("game");
         
-        return "OK";
+        return true;
     }
 
 }
