@@ -7,6 +7,8 @@ import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
 import gofish.servlet.observer.EventsQueueObserver;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +34,11 @@ public class CheckStatusServlet extends AjaxServlet {
         if (result.status == Engine.Status.ENDED) {
 //            session.invalidate();
 //            eventsQueue.clear();
+        }
+        
+        Map<String, Player> humanPlayers = getHumanPlayers();
+        if (humanPlayers != null) {
+            result.humanPlayersNames = humanPlayers.keySet();
         }
         
         // Add additional information as needed
@@ -62,6 +69,8 @@ public class CheckStatusServlet extends AjaxServlet {
         public Integer playerId;
         
         public PlayersList players;
+        
+        public Set<String> humanPlayersNames;
         
         public Integer totalPlayers;
         

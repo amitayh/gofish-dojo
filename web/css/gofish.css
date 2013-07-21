@@ -6,3 +6,7 @@ body {
     background-color: #f5f5f5;
     padding-top: 40px;
 }
+
+.hide {
+    display: none !important;
+}

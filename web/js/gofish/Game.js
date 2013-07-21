@@ -66,20 +66,28 @@ define([
         },
         
         startGame: function(event) {
-            var self = this, configData = event.data;
-            dataService.configure(configData).then(function(response) {
-                switch (response.status) {
-                    case 'CONFIGURED':
-                        var success = response.success;
-                        self[success ? 'startGameSuccess' : 'gameAlreadyConfigured']();
-                        self.loadPage('login');
-                        break;
+            var xml = event.xml;
+            if (xml) {
+                // Game configured with XML file
+                this.startGameSuccess();
+                this.loadPage('login');
+            } else {
+                // Manual configuration
+                var self = this;
+                dataService.configure(event.data).then(function(response) {
+                    switch (response.status) {
+                        case 'CONFIGURED':
+                            var success = response.success;
+                            self[success ? 'startGameSuccess' : 'gameAlreadyConfigured']();
+                            self.loadPage('login');
+                            break;
 
-                    case 'STARTED':
-                        self.gameFullError();
-                        break;
-                }
-            });
+                        case 'STARTED':
+                            self.gameFullError();
+                            break;
+                    }
+                });
+            }
         },
         
         joinGame: function(event) {            

@@ -118,6 +118,9 @@ public class Engine extends Observable {
     public void addPlayer(Player player) throws GameStatusException, AddPlayerException {
         ensureStatus(Status.CONFIGURED);
         
+        if (player == null) {
+            throw new AddPlayerException("Null player given");
+        }
         String name = player.getName();
         if (name.isEmpty()) {
             throw new AddPlayerException("Empty player name");

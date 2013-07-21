@@ -2,9 +2,11 @@ package gofish.servlet;
 
 import gofish.game.Engine;
 import gofish.game.player.Human;
+import gofish.game.player.Player;
 import gofish.servlet.observer.CardsDealerObserver;
 import gofish.servlet.observer.EventsQueueObserver;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Observer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -53,6 +55,11 @@ abstract public class BaseServlet extends HttpServlet {
             application.setAttribute("game.events", eventsQueue);
         }
         return engine;
+    }
+    
+    protected Map<String, Player> getHumanPlayers() {
+        ServletContext application = getServletContext();
+        return (Map<String, Player>) application.getAttribute("game.humanPlayers");
     }
     
     protected boolean isLoggedIn(HttpSession session) {

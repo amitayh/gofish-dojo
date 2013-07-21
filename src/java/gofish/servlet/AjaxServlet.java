@@ -53,5 +53,9 @@ abstract public class AjaxServlet extends BaseServlet {
     }
     
     abstract protected Object getData(HttpServletRequest request) throws Exception;
+    
+    public static Gson getGson() {
+        return gson;
+    }
 
 }

@@ -22,6 +22,8 @@ define([
         
         updateTimer: null,
         
+        xml: false,
+        
         submitForm: function(e) {
             var name = this.nameInput.value;
             if (name === '') {
@@ -32,6 +34,12 @@ define([
 
             // Stop regular submission
             event.stop(e);
+        },
+        
+        xmlConfig: function(flag) {
+            this.xml = flag;
+            domClass[flag ? 'add' : 'remove'](this.nameInput, 'hide');
+            domClass[flag ? 'remove' : 'add'](this.nameSelect, 'hide');
         },
         
         clearForm: function() {
