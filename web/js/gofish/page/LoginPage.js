@@ -1,5 +1,6 @@
 define([
     'dojo/_base/declare',
+    'dojo/_base/array',
     'dojo/_base/lang',
     'dojo/_base/event',
     'dojo/dom-construct',
@@ -11,7 +12,7 @@ define([
     'dojox/html/entities',
     'gofish/data-service',
     'dojo/text!gofish/template/LoginPage.html'
-], function(declare, lang, event, domConstruct, domClass, query, topic,
+], function(declare, array, lang, event, domConstruct, domClass, query, topic,
             _WidgetBase, _TemplatedMixin, entities, dataService, template) {
     
     var UpdateInterval = 1500;
@@ -42,6 +43,15 @@ define([
             event.stop(e);
         },
         
+        resetForm: function() {
+            this.nameInput.disabled = false;
+            this.nameInput.placeholder = 'Please enter your name';
+            this.nameInput.value = '';
+            this.nameSelect.disabled = false;
+            domConstruct.empty(this.nameSelect);
+            this.joinButton.disabled = false;
+        },
+        
         clearForm: function() {
             this.nameInput.blur();
             this.nameInput.disabled = true;
@@ -55,6 +65,7 @@ define([
         
         onLoad: function() {
             this.getPlayersList();
+            this.resetForm();
             this.nameInput.focus();
         },
         
@@ -97,14 +108,12 @@ define([
         },
         
         updateHumanPlayersNames: function(names) {
-            if (names !== undefined) {
-                var select = this.nameSelect;
-                domConstruct.empty(select);
-                for (var i = 0, l = names.length; i < l; i++) {
-                    var options = {innerHTML: entities.encode(names[i])};
-                    domConstruct.create('option', options, select);
-                }
-            }
+            var select = this.nameSelect;
+            domConstruct.empty(select);
+            array.forEach(names, function(name) {
+                var options = {innerHTML: entities.encode(name)};
+                domConstruct.create('option', options, select);
+            });
         },
         
         updatePlayersList: function(players, totalPlayers) {

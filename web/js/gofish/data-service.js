@@ -31,6 +31,10 @@ define(['dojo/_base/lang', 'dojo/request'], function(lang, request) {
             return request('getAvailableCards', {handleAs: 'json'});
         },
         
+        resetGame: function() {
+            return request('resetGame', {handleAs: 'json'});
+        },
+        
         performPlayerAction: function(action, args) {
             var data = {action: action};
             if (args !== undefined) {

@@ -8,16 +8,7 @@
         <link rel="stylesheet" type="text/css" href="css/gofish.css">
     </head>
     <body>
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container">
-                    <a class="brand" href="/gofish-dojo/">GoFish!</a>
-                </div>
-            </div>
-        </div>
-        <div class="container-fluid">
-            <div id="game"></div>
-        </div>
+        <div class="container-fluid" id="game"></div>
         
         <script src="js/config.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.0/dojo/dojo.js"></script>

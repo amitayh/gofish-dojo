@@ -1,6 +1,5 @@
 package gofish.servlet;
 
-import gofish.game.Engine;
 import gofish.game.card.Card;
 import gofish.game.card.CardsCollection;
 import gofish.game.card.Series;

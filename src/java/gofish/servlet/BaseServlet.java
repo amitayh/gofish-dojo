@@ -48,7 +48,12 @@ abstract public class BaseServlet extends HttpServlet {
     }
     
     protected Human getPlayer(HttpSession session) {
-        return (Human) session.getAttribute("player");
+        Human player = (Human) session.getAttribute("player");
+        if (player != null && !player.isPlaying()) {
+            session.invalidate();
+            player = null;
+        }
+        return player;
     }
 
 }

@@ -7,9 +7,10 @@ define([
     'gofish/page/ConfigPage',
     'gofish/page/LoginPage',
     'gofish/page/TablePage',
+    'gofish/page/EndedPage',
     'gofish/page/ErrorPage'
 ], function(declare, lang, domConstruct, topic, dataService,
-            ConfigPage, LoginPage, TablePage, ErrorPage) {
+            ConfigPage, LoginPage, TablePage, EndedPage, ErrorPage) {
 
     return declare(null, {
         
@@ -21,6 +22,7 @@ define([
                 config: new ConfigPage(),
                 login: new LoginPage(),
                 table: new TablePage(),
+                ended: new EndedPage(),
                 error: new ErrorPage()
             };
             this.init();
@@ -28,12 +30,14 @@ define([
         
         init: function() {
             var configPage = this.pages.config,
-                loginPage = this.pages.login;
+                loginPage = this.pages.login,
+                tablePage = this.pages.table;
 
             // Attach event listeners
             configPage.on('startGame', lang.hitch(this, 'startGame'));
             loginPage.on('joinGame', lang.hitch(this, 'joinGame'));
             loginPage.on('gameStarted', lang.hitch(this, 'gameStarted'));
+            tablePage.on('gameOver', lang.hitch(this, 'gameOver'));
             topic.subscribe('gofish/restart', lang.hitch(this, 'restartGame'));
         },
 
@@ -59,6 +63,10 @@ define([
                         // Game started
                         self.gameStarted({playerId: playerId});
                         break;
+                    
+                    case 'ENDED':
+                        // Game ended
+                        self.gameOver();
                 }
             });
         },
@@ -87,6 +95,14 @@ define([
 
                         case 'STARTED':
                             self.gameFullError();
+                            break;
+                        
+                        case 'ENDED':
+                            self.gameOver();
+                            break;
+                            
+                        default:
+                            self.loadPage('config');
                             break;
                     }
                 });
@@ -129,6 +145,10 @@ define([
             // Load new page
             newPage.emit('Load', {});
             this.currentPage = newPage;
+        },
+        
+        gameOver: function() {
+            this.loadPage('ended');
         },
 
         gameFullError: function() {
