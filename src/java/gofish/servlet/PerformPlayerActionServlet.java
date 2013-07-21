@@ -28,9 +28,9 @@ public class PerformPlayerActionServlet extends AjaxServlet {
         
         if (player != null) {
             try {
-                Engine engine = getEngine();
-                Action action = createAction(engine, player, request);
-                engine.performPlayerAction(action);
+                Game game = getGame();
+                Action action = createAction(player, request);
+                game.engine.performPlayerAction(action);
                 result.success = true;
             } catch (GameStatusException | PlayerActionException e) {
                 result.message = e.getMessage();
@@ -40,14 +40,14 @@ public class PerformPlayerActionServlet extends AjaxServlet {
         return result;
     }
 
-    private Action createAction(Engine engine, Player player, HttpServletRequest request)
+    private Action createAction(Player player, HttpServletRequest request)
             throws PlayerActionException {
         
         Action action = null;
         
         switch (request.getParameter("action")) {
             case "askCard":
-                action = createAskCardAction(engine, player, request);
+                action = createAskCardAction(player, request);
                 break;
                 
             case "dropSeries":
@@ -66,9 +66,10 @@ public class PerformPlayerActionServlet extends AjaxServlet {
         return action;
     }
     
-    private Action createAskCardAction(Engine engine, Player player, HttpServletRequest request) {
+    private Action createAskCardAction(Player player, HttpServletRequest request) {
+        Game game = getGame();
         Integer playerId = new Integer(request.getParameter("askFrom"));
-        Player askFrom = engine.getPlayer(playerId);
+        Player askFrom = game.engine.getPlayer(playerId);
         String cardName = request.getParameter("cardName");
         
         return new AskCardAction(player, askFrom, cardName);

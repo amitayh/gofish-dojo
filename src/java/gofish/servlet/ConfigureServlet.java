@@ -2,10 +2,10 @@ package gofish.servlet;
 
 import gofish.game.Engine;
 import gofish.game.config.Config;
-import gofish.game.engine.AddPlayerException;
-import gofish.game.engine.GameStatusException;
 import gofish.game.player.Computer;
-import javax.servlet.ServletException;
+import gofish.game.player.Player;
+import java.util.LinkedList;
+import java.util.List;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,12 +21,12 @@ public class ConfigureServlet extends AjaxServlet {
         
         StartGameResult result = new StartGameResult();
         
-        Engine engine = getEngine();
+        Game game = getGame();
+        Engine engine = game.engine;
         if (engine.getStatus() == Engine.Status.IDLE) {
             Config config = getConfig(request);
-            engine.configure(config);
-            addBots(engine, config);
-            getServletContext().setAttribute("game.config", config);
+            List<Player> bots = getBots(config);
+            game.configure(config, bots);
             result.success = true;
         }
         result.status = engine.getStatus();
@@ -44,17 +44,17 @@ public class ConfigureServlet extends AjaxServlet {
         
         return config;
     }
-    
-    private void addBots(Engine engine, Config config) throws ServletException {
-        try {
-            int total = config.getNumComputerPlayers();
-            for (int i = 0; i < total; i++) {
-                String name = botNames[i];
-                engine.addPlayer(new Computer(name));
-            }
-        } catch (GameStatusException | AddPlayerException e) {
-            throw new ServletException(e);
+
+    private List<Player> getBots(Config config) {
+        List<Player> bots = new LinkedList<>();
+        
+        int numBots = config.getNumComputerPlayers();
+        for (int i = 0; i < numBots; i++) {
+            String name = botNames[i];
+            bots.add(new Computer(name));
         }
+        
+        return bots;
     }
     
     public static class StartGameResult {

@@ -24,22 +24,22 @@ define([
         
         xml: false,
         
-        submitForm: function(e) {
-            var name = this.nameInput.value;
-            if (name === '') {
-                this.setAlert('Player name is required', 'error');
-            } else {
-                this.emit('JoinGame', {name: this.nameInput.value});
-            }
-
-            // Stop regular submission
-            event.stop(e);
-        },
-        
         xmlConfig: function(flag) {
             this.xml = flag;
             domClass[flag ? 'add' : 'remove'](this.nameInput, 'hide');
             domClass[flag ? 'remove' : 'add'](this.nameSelect, 'hide');
+        },
+        
+        submitForm: function(e) {
+            var name = this.xml ? this.nameSelect.value : this.nameInput.value;
+            if (name === '') {
+                this.setAlert('Player name is required', 'error');
+            } else {
+                this.emit('JoinGame', {name: name});
+            }
+
+            // Stop regular submission
+            event.stop(e);
         },
         
         clearForm: function() {
@@ -47,6 +47,9 @@ define([
             this.nameInput.disabled = true;
             this.nameInput.placeholder = '';
             this.nameInput.value = '';
+            this.nameSelect.blur();
+            this.nameSelect.disabled = true;
+            domConstruct.empty(this.nameSelect);
             this.joinButton.disabled = true;
         },
         
@@ -74,6 +77,7 @@ define([
                 callback = lang.hitch(this, 'getPlayersList');
 
             dataService.checkStatus(options).then(function(response) {
+                self.updateHumanPlayersNames(response.humanPlayersNames);
                 switch (response.status) {
                     case 'CONFIGURED':
                         // Update list and reset update timer
@@ -90,6 +94,17 @@ define([
                         break;
                 }
             });
+        },
+        
+        updateHumanPlayersNames: function(names) {
+            if (names !== undefined) {
+                var select = this.nameSelect;
+                domConstruct.empty(select);
+                for (var i = 0, l = names.length; i < l; i++) {
+                    var options = {innerHTML: entities.encode(names[i])};
+                    domConstruct.create('option', options, select);
+                }
+            }
         },
         
         updatePlayersList: function(players, totalPlayers) {

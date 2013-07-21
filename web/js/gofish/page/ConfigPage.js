@@ -45,7 +45,7 @@ define([
                 if (!event.data.success) {
                     this.setError(event.data.message);
                 } else {
-                    this.emit('StartGame', {});
+                    this.emit('StartGame', {xml: true});
                 }
             }
         },
@@ -124,7 +124,7 @@ define([
         },
                 
         startGame: function() {
-            this.emit('StartGame', {data: this.model});
+            this.emit('StartGame', {xml: false, data: this.model});
         },
         
         onStartGame: function(e) {}

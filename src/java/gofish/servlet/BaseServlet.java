@@ -2,12 +2,7 @@ package gofish.servlet;
 
 import gofish.game.Engine;
 import gofish.game.player.Human;
-import gofish.game.player.Player;
-import gofish.servlet.observer.CardsDealerObserver;
-import gofish.servlet.observer.EventsQueueObserver;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Observer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -37,29 +32,15 @@ abstract public class BaseServlet extends HttpServlet {
     abstract protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException;
     
-    protected Engine getEngine() {
+    protected Game getGame() {
         ServletContext application = getServletContext();
-        Engine engine = (Engine) application.getAttribute("game.engine");
-        if (engine == null) {
-            // Create game engine
-            engine = new Engine();
-            
-            // Add observers
-            Observer cardsDealer = new CardsDealerObserver();
-            Observer eventsQueue = new EventsQueueObserver();
-            engine.addObserver(cardsDealer);
-            engine.addObserver(eventsQueue);
-            
-            // Save attributes to servlet context
-            application.setAttribute("game.engine", engine);
-            application.setAttribute("game.events", eventsQueue);
+        Game game = (Game) application.getAttribute("game");
+        if (game == null) {
+            Engine engine = new Engine();
+            game = new Game(engine);
+            application.setAttribute("game", game);
         }
-        return engine;
-    }
-    
-    protected Map<String, Player> getHumanPlayers() {
-        ServletContext application = getServletContext();
-        return (Map<String, Player>) application.getAttribute("game.humanPlayers");
+        return game;
     }
     
     protected boolean isLoggedIn(HttpSession session) {

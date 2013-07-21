@@ -5,11 +5,8 @@ import gofish.game.config.Config;
 import gofish.game.event.Event;
 import gofish.game.player.Player;
 import gofish.game.player.PlayersList;
-import gofish.servlet.observer.EventsQueueObserver;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import javax.servlet.ServletContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -21,7 +18,9 @@ public class CheckStatusServlet extends AjaxServlet {
     protected Object getData(HttpServletRequest request) throws Exception {
         HttpSession session = request.getSession(true);
         Player player = getPlayer(session);
-        Engine engine = getEngine();
+        
+        Game game = getGame();
+        Engine engine = game.engine;
         
         // Always include game status and player ID from session
         CheckStatusResult result = new CheckStatusResult();
@@ -30,15 +29,8 @@ public class CheckStatusServlet extends AjaxServlet {
             result.playerId = player.getId();
         }
         
-        EventsQueueObserver eventsQueue = getEventsQueue();
-        if (result.status == Engine.Status.ENDED) {
-//            session.invalidate();
-//            eventsQueue.clear();
-        }
-        
-        Map<String, Player> humanPlayers = getHumanPlayers();
-        if (humanPlayers != null) {
-            result.humanPlayersNames = humanPlayers.keySet();
+        if (!game.humanPlayers.isEmpty()) {
+            result.humanPlayersNames = game.humanPlayers.keySet();
         }
         
         // Add additional information as needed
@@ -50,16 +42,11 @@ public class CheckStatusServlet extends AjaxServlet {
         
         Integer lastEvent = ServletUtils.getInteger(request, "lastEvent");
         if (lastEvent != null) {
-            result.events = eventsQueue.getEvents(lastEvent);
-            result.totalEvents = eventsQueue.getTotalNumEvents();
+            result.events = game.events.getEvents(lastEvent);
+            result.totalEvents = game.events.getTotalNumEvents();
         }
         
         return result;
-    }
-    
-    private EventsQueueObserver getEventsQueue() {
-        ServletContext application = getServletContext();
-        return (EventsQueueObserver) application.getAttribute("game.events");
     }
     
     private static class CheckStatusResult {

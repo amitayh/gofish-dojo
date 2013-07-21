@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import javax.xml.XMLConstants;
@@ -33,14 +32,14 @@ abstract public class XMLConfigFactory implements ConfigFactory {
     
     private DocumentBuilder builder;
     
-    private Collection<Player> players = new LinkedList<>();
+    private List<Player> players = new LinkedList<>();
     
     @Override
     public Config getConfig() {
         return config;
     }
 
-    public Collection<Player> getPlayers() {
+    public List<Player> getPlayers() {
         return players;
     }
     
@@ -72,7 +71,7 @@ abstract public class XMLConfigFactory implements ConfigFactory {
         return builder;
     }
     
-    private Element getRootElement(File file) {
+    private Element getRootElement(File file) throws ValidationException {
         Element root = null;
         try {
             DocumentBuilder db = getDocumentBuilder();
@@ -86,7 +85,7 @@ abstract public class XMLConfigFactory implements ConfigFactory {
         return root;
     }
     
-    private Config createConfig(Element root) {
+    private Config createConfig(Element root) throws ValidationException {
         Config newConfig = new Config();
         
         Node settings = root.getElementsByTagName("settings").item(0);
@@ -123,7 +122,7 @@ abstract public class XMLConfigFactory implements ConfigFactory {
         return newConfig;
     }
     
-    private Player getPlayer(Element playerElement) {
+    private Player getPlayer(Element playerElement) throws ValidationException {
         Player player = null;
         String name = playerElement.getAttribute("name");
         String type = playerElement.getAttribute("type");

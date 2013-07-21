@@ -13,9 +13,7 @@ import gofish.game.player.Player;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-import javax.servlet.ServletContext;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -33,14 +31,18 @@ public class UploadXmlServlet extends BaseServlet {
         
         UploadXmlResult result = new UploadXmlResult();
         
-        Engine engine = getEngine();
-        if (engine.getStatus() == Engine.Status.IDLE) {
+        Game game = getGame();
+        if (game.engine.getStatus() == Engine.Status.IDLE) {
             File file = getUploadedFile(request);
             try {
                 XMLConfigFactory factory = new Factory();
                 factory.validate(file);
-                configureEngine(engine, factory);
+                
+                Config config = factory.getConfig();
+                List<Player> players = factory.getPlayers();
+                game.configure(config, players);
                 result.success = true;
+                
             } catch (ValidationException | GameStatusException | AddPlayerException e) {
                 result.message = e.getMessage();
             } finally {
@@ -74,28 +76,6 @@ public class UploadXmlServlet extends BaseServlet {
         }
         
         return file;
-    }
-    
-    private void configureEngine(Engine engine, XMLConfigFactory factory)
-            throws GameStatusException, AddPlayerException {
-        
-        Config config = factory.getConfig();
-        engine.configure(config);
-        
-        int initialCapacity = config.getTotalNumPlayers();
-        Map<String, Player> humanPlayers = new HashMap<>(initialCapacity);
-        for (Player player : factory.getPlayers()) {
-            if (player.isHuman()) {
-                humanPlayers.put(player.getName(), player);
-            } else {
-                // Add computer players
-                engine.addPlayer(player);
-            }
-        }
-        
-        ServletContext application = getServletContext();
-        application.setAttribute("game.config", config);
-        application.setAttribute("game.humanPlayers", humanPlayers);
     }
 
     private void printOutput(HttpServletResponse response, UploadXmlResult result)

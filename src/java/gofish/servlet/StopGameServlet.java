@@ -17,8 +17,7 @@ public class StopGameServlet extends AjaxServlet {
         }
         // Delete game
         ServletContext application = getServletContext();
-        application.removeAttribute("game.engine");
-        application.removeAttribute("game.events");
+        application.removeAttribute("game");
         
         return "OK";
     }

@@ -21,11 +21,11 @@ public class GetAvailableCardsServlet extends AjaxServlet {
         String[] result = new String[0];
         
         if (player != null) {
-            Engine engine = getEngine();
+            Game game = getGame();
             List<String> availableCards = new LinkedList<>();
             CardsCollection hand = player.getHand();
             for (String property : hand.properties()) {
-                Set<Card> cards = engine.findCards(property);
+                Set<Card> cards = game.engine.findCards(property);
                 if (cards.size() > hand.seriesSize(property)) {
                     for (Card card : cards) {
                         if (!hand.contains(card)) {

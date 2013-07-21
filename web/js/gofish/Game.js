@@ -49,6 +49,8 @@ define([
 
                     case 'CONFIGURED':
                         // Game is configured, waiting for human players
+                        var xml = (response.humanPlayersNames !== undefined);
+                        self.pages.login.xmlConfig(xml);
                         self[playerId ? 'joinGameSuccess' : 'gameAlreadyConfigured']();
                         self.loadPage('login');
                         break;
@@ -67,6 +69,7 @@ define([
         
         startGame: function(event) {
             var xml = event.xml;
+            this.pages.login.xmlConfig(xml);
             if (xml) {
                 // Game configured with XML file
                 this.startGameSuccess();
